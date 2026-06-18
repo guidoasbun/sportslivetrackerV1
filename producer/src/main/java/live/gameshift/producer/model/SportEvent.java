@@ -1,44 +1,43 @@
 package live.gameshift.producer.model;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
 
 public class SportEvent {
 
     private String eventId;
-    private String sportType;
+    private SportType sportType;
     private String action;
-    private List<String> participants;
-    private Map<String, String> metadata;
+    private Map<String, String> participants;
+    private String rawPayload;
     private Instant timestamp;
 
     public SportEvent() {}
 
-    public SportEvent(String eventId, String sportType, String action,
-                      List<String> participants, Map<String, String> metadata) {
+    public SportEvent(String eventId, SportType sportType, String action,
+                      Map<String, String> participants, String rawPayload) {
         this.eventId = eventId;
         this.sportType = sportType;
         this.action = action;
         this.participants = participants;
-        this.metadata = metadata;
+        this.rawPayload = rawPayload;
         this.timestamp = Instant.now();
     }
 
     public String getEventId() { return eventId; }
     public void setEventId(String eventId) { this.eventId = eventId; }
 
-    public String getSportType() { return sportType; }
-    public void setSportType(String sportType) { this.sportType = sportType; }
+    public SportType getSportType() { return sportType; }
+    public void setSportType(SportType sportType) { this.sportType = sportType; }
 
     public String getAction() { return action; }
     public void setAction(String action) { this.action = action; }
 
-    public List<String> getParticipants() { return participants; }
-    public void setParticipants(List<String> participants) { this.participants = participants; }
+    public Map<String, String> getParticipants() { return participants; }
+    public void setParticipants(Map<String, String> participants) { this.participants = participants; }
 
-    public Map<String, String> getMetadata() { return metadata; }
-    public void setMetadata(Map<String, String> metadata) { this.metadata = metadata; }
+    public String getRawPayload() { return rawPayload; }
+    public void setRawPayload(String rawPayload) { this.rawPayload = rawPayload; }
 
     public Instant getTimestamp() { return timestamp; }
     public void setTimestamp(Instant timestamp) { this.timestamp = timestamp; }

@@ -121,6 +121,14 @@ resource "aws_ecs_task_definition" "producer" {
       { name = "API_SPORTS_KEY", valueFrom = var.api_sports_key_arn }
     ]
 
+    healthCheck = {
+      command     = ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval    = 30
+      timeout     = 5
+      retries     = 3
+      startPeriod = 60
+    }
+
     logConfiguration = {
       logDriver = "awslogs"
       options = {

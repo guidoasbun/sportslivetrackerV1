@@ -1,0 +1,55 @@
+package live.gameshift.producer.normalizer;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import live.gameshift.producer.model.SportEvent;
+import live.gameshift.producer.model.SportType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+@Component
+public class SoccerNormalizer implements SportNormalizer {
+
+    private static final Logger log = LoggerFactory.getLogger(SoccerNormalizer.class);
+
+    private final ObjectMapper objectMapper;
+
+    public SoccerNormalizer(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
+    @Override
+    public SportType getSportType() {
+        return SportType.SOCCER;
+    }
+
+    @Override
+    public Optional<SportEvent> normalize(String json) throws Exception {
+        JsonNode root = objectMapper.readTree(json);
+        JsonNode responseArray = root.path("response");
+
+        if (!responseArray.isArray() || responseArray.isEmpty()) {
+            log.info("No live fixture data, skipping");
+            return Optional.empty();
+        }
+
+        JsonNode fixture = responseArray.path(0);
+
+        String homeTeam = fixture.path("teams").path("home").path("name").asText("Unknown");
+        String awayTeam = fixture.path("teams").path("away").path("name").asText("Unknown");
+        String status = fixture.path("fixture").path("status").path("short").asText("NS");
+
+        return Optional.of(new SportEvent(
+                UUID.randomUUID().toString(),
+                SportType.SOCCER,
+                status,
+                Map.of("home", homeTeam, "away", awayTeam),
+                json
+        ));
+    }
+}
