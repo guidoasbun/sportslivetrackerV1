@@ -106,6 +106,11 @@ resource "aws_ecs_task_definition" "producer" {
   execution_role_arn       = var.ecs_execution_role_arn
   task_role_arn            = var.producer_task_role_arn
 
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "ARM64"
+  }
+
   container_definitions = jsonencode([{
     name      = "producer"
     image     = "${var.ecr_producer_repository_url}:latest"
@@ -184,6 +189,11 @@ resource "aws_ecs_task_definition" "frontend" {
   execution_role_arn       = var.ecs_execution_role_arn
   task_role_arn            = var.frontend_task_role_arn
 
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "ARM64"
+  }
+
   container_definitions = jsonencode([{
     name      = "frontend"
     image     = "${var.ecr_frontend_repository_url}:latest"
@@ -260,6 +270,11 @@ resource "aws_ecs_task_definition" "api" {
   memory                   = var.api_memory
   execution_role_arn       = var.ecs_execution_role_arn
   task_role_arn            = var.api_task_role_arn
+
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "ARM64"
+  }
 
   container_definitions = jsonencode([{
     name      = "api"

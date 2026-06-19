@@ -9,6 +9,7 @@ import java.time.Instant;
 @DynamoDbBean
 public class Summary {
 
+    private String summaryId;
     private String eventId;
     private SportType sportType;
     private String commentary;
@@ -18,6 +19,14 @@ public class Summary {
     }
 
     @DynamoDbPartitionKey
+    public String getSummaryId() {
+        return summaryId;
+    }
+
+    public void setSummaryId(String summaryId) {
+        this.summaryId = summaryId;
+    }
+
     public String getEventId() {
         return eventId;
     }

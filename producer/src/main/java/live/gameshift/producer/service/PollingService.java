@@ -31,7 +31,13 @@ public class PollingService {
     public void poll() {
         for (SportType sportType : props.getApi().getSports().getConfigs().keySet()) {
             try {
-                Optional<SportEvent> event = apiSportsClient.fetchLatestEvent(sportType);
+                Optional<SportEvent> event;
+                if (props.getApi().getSports().isMockMode()) {
+                    event = generateMockEvent(sportType);
+                } else {
+                    event = apiSportsClient.fetchLatestEvent(sportType);
+                }
+                
                 if (event.isEmpty()) {
                     log.info("No live fixture data for {}, skipping publish", sportType);
                     continue;
@@ -43,5 +49,39 @@ public class PollingService {
                 log.error("Poll cycle failed for sport: {}", sportType, e);
             }
         }
+    }
+
+    private Optional<SportEvent> generateMockEvent(SportType sportType) {
+        SportEvent event = new SportEvent();
+        event.setEventId(java.util.UUID.randomUUID().toString());
+        event.setSportType(sportType);
+        event.setTimestamp(java.time.Instant.now());
+        event.setRawPayload("{ \"mock\": true }");
+
+        java.util.Map<String, String> participants = new java.util.HashMap<>();
+        
+        switch (sportType) {
+            case SOCCER:
+                event.setAction("GOAL");
+                participants.put("scorer", "Mock Player");
+                participants.put("team", "Mock Team FC");
+                break;
+            case BASKETBALL:
+                event.setAction("3_POINTER");
+                participants.put("player", "Mock Shooter");
+                participants.put("team", "Mock City Hoops");
+                break;
+            case FOOTBALL:
+                event.setAction("TOUCHDOWN");
+                participants.put("player", "Mock Quarterback");
+                participants.put("team", "Mock City Eagles");
+                break;
+            default:
+                event.setAction("SCORE");
+                participants.put("player", "Mock Athlete");
+                break;
+        }
+        event.setParticipants(participants);
+        return Optional.of(event);
     }
 }

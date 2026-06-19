@@ -144,7 +144,10 @@ resource "aws_iam_role_policy" "lambda_bedrock" {
     Statement = [{
       Effect   = "Allow"
       Action   = "bedrock:InvokeModel"
-      Resource = local.bedrock_model_arn
+      Resource = [
+        "arn:aws:bedrock:*::foundation-model/*",
+        "arn:aws:bedrock:*:${local.account_id}:inference-profile/*",
+      ]
     }]
   })
 }

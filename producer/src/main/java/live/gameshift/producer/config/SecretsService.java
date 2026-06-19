@@ -11,6 +11,11 @@ public class SecretsService {
     private final String apiSportsKey;
 
     public SecretsService(AppProperties props) {
+        if (props.getApi().getSports().isMockMode()) {
+            this.apiSportsKey = "mock-key";
+            return;
+        }
+
         SecretsManagerClient client = SecretsManagerClient.builder()
                 .region(Region.of(props.getAws().getRegion()))
                 .build();

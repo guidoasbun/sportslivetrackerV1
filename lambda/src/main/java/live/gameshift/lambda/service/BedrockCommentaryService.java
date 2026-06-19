@@ -13,8 +13,8 @@ public class BedrockCommentaryService {
 
     private final BedrockRuntimeClient bedrockClient;
     private final ObjectMapper objectMapper;
-    // We use Claude 3 Haiku for blazing fast speed and low cost
-    private final String modelId = "anthropic.claude-3-haiku-20240307-v1:0";
+    // We use the model ID passed in securely via Terraform environment variables
+    private final String modelId = System.getenv("BEDROCK_MODEL_ID");
 
     public BedrockCommentaryService(ObjectMapper objectMapper) {
         // Initializes Bedrock client and automatically uses Lambda's IAM permissions

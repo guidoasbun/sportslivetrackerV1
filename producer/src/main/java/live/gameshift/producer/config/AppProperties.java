@@ -46,10 +46,13 @@ public class AppProperties {
 
         public static class Sports {
             private long pollIntervalMs;
+            private boolean mockMode;
             private java.util.Map<live.gameshift.producer.model.SportType, SportConfig> configs = new java.util.HashMap<>();
 
             public long getPollIntervalMs() { return pollIntervalMs; }
             public void setPollIntervalMs(long pollIntervalMs) { this.pollIntervalMs = pollIntervalMs; }
+            public boolean isMockMode() { return mockMode; }
+            public void setMockMode(boolean mockMode) { this.mockMode = mockMode; }
             public java.util.Map<live.gameshift.producer.model.SportType, SportConfig> getConfigs() { return configs; }
             public void setConfigs(java.util.Map<live.gameshift.producer.model.SportType, SportConfig> configs) { this.configs = configs; }
         }

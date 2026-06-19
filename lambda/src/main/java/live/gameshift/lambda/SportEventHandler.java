@@ -25,8 +25,8 @@ public class SportEventHandler implements RequestHandler<KinesisEvent, Void> {
         this.objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
         // Grab environment variables injected securely by Terraform
-        String eventTableName = System.getenv("EVENTS_TABLE");
-        String summaryTableName = System.getenv("SUMMARIES_TABLE");
+        String eventTableName = System.getenv("EVENTS_TABLE_NAME");
+        String summaryTableName = System.getenv("SUMMARIES_TABLE_NAME");
 
         this.dynamoDbService = new DynamoDbService(eventTableName, summaryTableName);
         this.bedrockService = new BedrockCommentaryService(objectMapper);
@@ -63,6 +63,7 @@ public class SportEventHandler implements RequestHandler<KinesisEvent, Void> {
 
                 // 5. Save the AI Commentary to the Summaries table
                 Summary summary = new Summary();
+                summary.setSummaryId(java.util.UUID.randomUUID().toString());
                 summary.setEventId(sportEvent.getEventId());
                 summary.setSportType(sportEvent.getSportType());
                 summary.setCommentary(commentary);
