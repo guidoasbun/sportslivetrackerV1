@@ -48,7 +48,7 @@ variable "timeout_seconds" {
 variable "handler" {
   description = "Fully-qualified Java handler: ClassName::methodName"
   type        = string
-  default     = "io.asbun.lambda.SportEventHandler::handleRequest"
+  default     = "live.gameshift.lambda.SportEventHandler::handleRequest"
 }
 
 variable "kinesis_batch_size" {

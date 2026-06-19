@@ -5,7 +5,11 @@ api_sports_key_arn               = "arn:aws:secretsmanager:us-east-1:41238175153
 cognito_google_client_id_arn     = "arn:aws:secretsmanager:us-east-1:412381751532:secret:sports-tracker/dev/google-client-id-8r3JvX"
 cognito_google_client_secret_arn = "arn:aws:secretsmanager:us-east-1:412381751532:secret:sports-tracker/dev/google-client-secret-Ol1mVP"
 
-bedrock_model_id = "anthropic.claude-3-haiku-20240307-v1:0"
+# ──────────────────────────────────────────────────────────────
+# We use Claude 4.5 Haiku based on availability in your region
+# Make sure to enable this model in your AWS Bedrock Console!
+# ──────────────────────────────────────────────────────────────
+bedrock_model_id = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
 
 domain_name = "dev.gameshift.live"
 

@@ -106,6 +106,11 @@ resource "aws_ecs_task_definition" "producer" {
   execution_role_arn       = var.ecs_execution_role_arn
   task_role_arn            = var.producer_task_role_arn
 
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "ARM64"
+  }
+
   container_definitions = jsonencode([{
     name      = "producer"
     image     = "${var.ecr_producer_repository_url}:latest"
@@ -120,6 +125,14 @@ resource "aws_ecs_task_definition" "producer" {
     secrets = [
       { name = "API_SPORTS_KEY", valueFrom = var.api_sports_key_arn }
     ]
+
+    healthCheck = {
+      command     = ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval    = 30
+      timeout     = 5
+      retries     = 3
+      startPeriod = 60
+    }
 
     logConfiguration = {
       logDriver = "awslogs"
@@ -175,6 +188,11 @@ resource "aws_ecs_task_definition" "frontend" {
   memory                   = var.frontend_memory
   execution_role_arn       = var.ecs_execution_role_arn
   task_role_arn            = var.frontend_task_role_arn
+
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "ARM64"
+  }
 
   container_definitions = jsonencode([{
     name      = "frontend"
@@ -252,6 +270,11 @@ resource "aws_ecs_task_definition" "api" {
   memory                   = var.api_memory
   execution_role_arn       = var.ecs_execution_role_arn
   task_role_arn            = var.api_task_role_arn
+
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "ARM64"
+  }
 
   container_definitions = jsonencode([{
     name      = "api"
