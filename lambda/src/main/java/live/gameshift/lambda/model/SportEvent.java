@@ -1,7 +1,6 @@
 package live.gameshift.lambda.model;
 
 import live.gameshift.lambda.model.enums.SportType;
-import java.time.Instant;
 import java.util.Map;
 
 public class SportEvent {
@@ -11,7 +10,7 @@ public class SportEvent {
     private String action;
     private Map<String, String> participants;
     private String rawPayload;
-    private Instant timestamp;
+    private Long eventTimestamp;
 
     public SportEvent() {
     }
@@ -56,11 +55,11 @@ public class SportEvent {
         this.rawPayload = rawPayload;
     }
 
-    public Instant getTimestamp() {
-        return timestamp;
+    public Long getEventTimestamp() {
+        return eventTimestamp;
     }
 
-    public void setTimestamp(Instant timestamp) {
-        this.timestamp = timestamp;
+    public void setEventTimestamp(Long eventTimestamp) {
+        this.eventTimestamp = eventTimestamp;
     }
 }

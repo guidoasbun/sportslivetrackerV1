@@ -35,7 +35,8 @@ public class ApiSportsClient {
         String apiKey = secretsService.getApiSportsKey();
         for (Map.Entry<SportType, AppProperties.SportConfig> entry : configs.entrySet()) {
             restClients.put(entry.getKey(), RestClient.builder()
-                    .baseUrl(entry.getValue().getBaseUrl())
+                    .baseUrl(
+                            java.util.Objects.requireNonNull(entry.getValue().getBaseUrl(), "baseUrl must not be null"))
                     .defaultHeader("x-apisports-key", apiKey)
                     .build());
         }

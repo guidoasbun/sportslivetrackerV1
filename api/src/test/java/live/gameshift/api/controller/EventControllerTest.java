@@ -1,0 +1,41 @@
+package live.gameshift.api.controller;
+
+import live.gameshift.api.config.SecurityConfig;
+import live.gameshift.api.service.SseEmitterService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
+
+@WebMvcTest(EventController.class)
+@Import(SecurityConfig.class)
+class EventControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private SseEmitterService sseEmitterService;
+
+    @Test
+    void streamEvents_shouldReturnSseEmitter() throws Exception {
+        SseEmitter mockEmitter = new SseEmitter(0L);
+        when(sseEmitterService.createEmitter()).thenReturn(mockEmitter);
+
+        mockMvc.perform(get("/api/events/stream")
+                        .accept(MediaType.TEXT_EVENT_STREAM))
+                .andExpect(status().isOk())
+                .andExpect(request().asyncStarted());
+    }
+}

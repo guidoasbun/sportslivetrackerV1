@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Inheriting from Spring Boot's parent POM means we get:
+         - Pre-configured dependency versions (no need to specify versions for Spring libs)
+         - Sensible default plugin configurations
+         - Java version management via <java.version> property -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.4</version>
+        <relativePath/>
+    </parent>
+
+    <!-- Maven coordinates — uniquely identify this project in the Maven ecosystem -->
+    <groupId>live.gameshift</groupId>
+    <artifactId>api</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>api</name>
+    <description>Reads DynamoDB events and summaries, streams to frontend via SSE</description>
+
+    <properties>
+        <!-- Java 21 — matches the producer and lambda -->
+        <java.version>21</java.version>
+        <!-- Single place to control the AWS SDK version for all AWS dependencies -->
+        <aws.sdk.version>2.26.31</aws.sdk.version>
+    </properties>
+
+    <!-- The BOM (Bill of Materials) ensures every AWS SDK module uses the exact same version.
+         Without this, you could accidentally mix SDK 2.26.31 with an older sub-dependency,
+         causing runtime ClassNotFoundException errors. -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${aws.sdk.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- Core Spring Boot web framework: embedded Tomcat, @RestController,
+             JSON serialization via Jackson, request/response handling -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Adds production-ready features: /actuator/health endpoint that
+             ECS uses for container health checks -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- AWS DynamoDB Enhanced Client — maps Java POJOs to DynamoDB items.
+             Think of it like a lightweight ORM for DynamoDB.
+             We use this to query the Events and Summaries tables. -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>dynamodb-enhanced</artifactId>
+        </dependency>
+
+        <!-- Test dependencies: JUnit 5, Mockito, Spring MockMvc.
+             scope=test means these JARs are NOT included in the final production build. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+                <!-- Core Spring Security features to secure our endpoints -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- Allows Spring to act as an OAuth2 Resource Server. 
+             It will automatically intercept requests, look for a Bearer JWT token,
+             and validate it against our AWS Cognito user pool. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <finalName>api</finalName>
+        <plugins>
+            <!-- Packages the app as an executable JAR with embedded Tomcat.
+                 This is what makes `java -jar api.jar` work.
+                 Without this plugin, you'd get a plain JAR that can't run on its own. -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
