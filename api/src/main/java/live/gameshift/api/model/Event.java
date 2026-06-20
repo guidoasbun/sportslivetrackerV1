@@ -17,7 +17,7 @@ public class Event {
     private String action;
     private Map<String, String> participants;
     private String rawPayload;
-    private Instant eventTimestamp; // Note the name here!
+    private Long eventTimestamp; // Note the name here!
 
     public Event() {
     }
@@ -42,10 +42,10 @@ public class Event {
 
     // 3. GSI Sort Key
     @DynamoDbSecondarySortKey(indexNames = "sport-type-timestamp-index")
-    public Instant getEventTimestamp() {
+    public Long getEventTimestamp() {
         return eventTimestamp;
     }
-    public void setEventTimestamp(Instant eventTimestamp) {
+    public void setEventTimestamp(Long eventTimestamp) {
         this.eventTimestamp = eventTimestamp;
     }
 
