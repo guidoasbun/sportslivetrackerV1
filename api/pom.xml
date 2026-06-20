@@ -67,14 +67,6 @@
             <artifactId>dynamodb-enhanced</artifactId>
         </dependency>
 
-        <!-- Jackson module for java.time types (Instant, LocalDateTime, etc.).
-             Without this, serializing an Instant field to JSON would throw:
-             "no serializer found for class java.time.Instant" -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-        </dependency>
-
         <!-- Test dependencies: JUnit 5, Mockito, Spring MockMvc.
              scope=test means these JARs are NOT included in the final production build. -->
         <dependency>
