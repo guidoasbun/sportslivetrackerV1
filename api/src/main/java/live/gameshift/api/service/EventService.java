@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.List;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Service
 public class EventService {
     
@@ -20,6 +23,7 @@ public class EventService {
     private final SseEmitterService sseEmitterService;
     
     private Long lastPollTime;
+    private Set<String> processedIdsAtLastPollTime = new HashSet<>();
 
     public EventService(EventRepository eventRepository, SseEmitterService sseEmitterService) {
         this.eventRepository = eventRepository;
@@ -31,15 +35,25 @@ public class EventService {
     // Tells Spring to run this method automatically every 5,000 milliseconds
     @Scheduled(fixedRate = 5000)
     public void pollForNewEvents() {
-        Long maxEventTimeSeen = lastPollTime;
+        Long newMaxTime = lastPollTime;
+        Set<String> newMaxIds = new HashSet<>();
         
         for (SportType sportType : SportType.values()) {
             List<Event> recentEvents = eventRepository.findRecentEvents(sportType, lastPollTime);
             
             for (Event event : recentEvents) {
-                // Track the highest timestamp we've successfully processed
-                if (event.getEventTimestamp() > maxEventTimeSeen) {
-                    maxEventTimeSeen = event.getEventTimestamp();
+                // 1. If it's at the exact boundary and we already processed it, skip duplicate
+                if (event.getEventTimestamp().equals(lastPollTime) && processedIdsAtLastPollTime.contains(event.getEventId())) {
+                    continue;
+                }
+
+                // 2. Track the highest timestamp we've successfully processed
+                if (event.getEventTimestamp() > newMaxTime) {
+                    newMaxTime = event.getEventTimestamp();
+                    newMaxIds.clear();
+                    newMaxIds.add(event.getEventId());
+                } else if (event.getEventTimestamp().equals(newMaxTime)) {
+                    newMaxIds.add(event.getEventId());
                 }
 
                 // Map the Database Entity to our decoupled DTO
@@ -56,9 +70,13 @@ public class EventService {
             }
         }
         
-        // Only move the window forward based on the data we ACTUALLY saw.
-        // Combined with our exclusive lower bound (sortGreaterThan), this guarantees
-        // we never miss delayed events and never broadcast duplicates!
-        lastPollTime = maxEventTimeSeen;
+        // 3. Move the window forward safely
+        if (newMaxTime > lastPollTime) {
+            lastPollTime = newMaxTime;
+            processedIdsAtLastPollTime = newMaxIds;
+        } else if (newMaxTime.equals(lastPollTime)) {
+            // We found more events at the exact same boundary timestamp
+            processedIdsAtLastPollTime.addAll(newMaxIds);
+        }
     }
 }
