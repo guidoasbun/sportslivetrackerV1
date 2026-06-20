@@ -28,6 +28,7 @@ public class SseEmitterService {
             // Send a welcome message so you can see it in Postman immediately!
             emitter.send(SseEmitter.event().name("message").data("Welcome to SportsLiveTracker API! Your SSE connection is successful."));
         } catch (IOException e) {
+            emitter.completeWithError(e);
             this.emitters.remove(emitter);
         }
 
@@ -54,6 +55,7 @@ public class SseEmitterService {
                 emitter.send(SseEmitter.event().name("message").data(eventDto));
             } catch (IOException e) {
                 // If we get an exception, the client probably disconnected abruptly
+                emitter.completeWithError(e);
                 deadEmitters.add(emitter);
             }
         });

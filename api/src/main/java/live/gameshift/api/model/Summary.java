@@ -14,7 +14,7 @@ public class Summary {
     private String eventId;
     private SportType sportType;
     private String commentary;
-    private Long timestamp;
+    private Instant timestamp;
 
     public Summary() {
     }
@@ -52,10 +52,10 @@ public class Summary {
         this.commentary = commentary;
     }
 
-    public Long getTimestamp() {
+    public Instant getTimestamp() {
         return timestamp;
     }
-    public void setTimestamp(Long timestamp) {
+    public void setTimestamp(Instant timestamp) {
         this.timestamp = timestamp;
     }
 }

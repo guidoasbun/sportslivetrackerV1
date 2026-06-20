@@ -99,6 +99,7 @@
     </dependencies>
 
     <build>
+        <finalName>api</finalName>
         <plugins>
             <!-- Packages the app as an executable JAR with embedded Tomcat.
                  This is what makes `java -jar api.jar` work.

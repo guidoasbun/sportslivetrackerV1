@@ -12,6 +12,8 @@ import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
 
+import java.time.Instant;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,12 +33,12 @@ public class EventRepository {
         this.sportTypeIndex = table.index("sport-type-timestamp-index");
     }
 
-    public List<Event> findRecentEvents(SportType sportType, Long sinceEpochMillis) {
-        // Query condition: "Partition key equals SportType AND Sort key >= sinceEpochMillis"
-        QueryConditional queryConditional = QueryConditional.sortGreaterThanOrEqualTo(
+    public List<Event> findRecentEvents(SportType sportType, Instant since) {
+        // Query condition: "Partition key equals SportType AND Sort key > since"
+        QueryConditional queryConditional = QueryConditional.sortGreaterThan(
                 Key.builder()
                         .partitionValue(sportType.name())
-                        .sortValue(sinceEpochMillis) 
+                        .sortValue(since.toString()) 
                         .build()
         );
 

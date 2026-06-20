@@ -21,7 +21,7 @@ public class SummaryService {
                         summary.getSummaryId(),
                         summary.getEventId(),
                         summary.getCommentary(),
-                        summary.getTimestamp()
+                        summary.getTimestamp() != null ? summary.getTimestamp().toEpochMilli() : 0L
                 ));
     }
 }

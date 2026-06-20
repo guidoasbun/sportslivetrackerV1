@@ -16,7 +16,7 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 # Only copy the compiled jar file from Stage 1
-COPY --from=builder /app/target/api-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=builder /app/target/api.jar app.jar
 
 # Security best practice: Run as a non-root user
 RUN addgroup -S spring && adduser -S spring -G spring

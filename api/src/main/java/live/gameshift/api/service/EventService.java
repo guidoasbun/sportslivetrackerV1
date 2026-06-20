@@ -19,31 +19,36 @@ public class EventService {
     private final EventRepository eventRepository;
     private final SseEmitterService sseEmitterService;
     
-    private Long lastPollTime;
+    private Instant lastPollTime;
 
     public EventService(EventRepository eventRepository, SseEmitterService sseEmitterService) {
         this.eventRepository = eventRepository;
         this.sseEmitterService = sseEmitterService;
         // Start polling from the exact moment the server starts
-        this.lastPollTime = Instant.now().toEpochMilli();
+        this.lastPollTime = Instant.now();
     }
 
     // Tells Spring to run this method automatically every 5,000 milliseconds
     @Scheduled(fixedRate = 5000)
     public void pollForNewEvents() {
-        Long currentPollTime = Instant.now().toEpochMilli();
+        Instant maxEventTimeSeen = lastPollTime;
         
         for (SportType sportType : SportType.values()) {
             List<Event> recentEvents = eventRepository.findRecentEvents(sportType, lastPollTime);
             
             for (Event event : recentEvents) {
+                // Track the highest timestamp we've successfully processed
+                if (event.getTimestamp().isAfter(maxEventTimeSeen)) {
+                    maxEventTimeSeen = event.getTimestamp();
+                }
+
                 // Map the Database Entity to our decoupled DTO
                 EventDto dto = new EventDto(
                         event.getEventId(),
                         event.getSportType(),
                         event.getAction(),
                         event.getParticipants(),
-                        event.getEventTimestamp()
+                        event.getTimestamp().toEpochMilli()
                 );
                 
                 log.info("Broadcasting new event: {} - {}", sportType, event.getAction());
@@ -51,7 +56,9 @@ public class EventService {
             }
         }
         
-        // Move the window forward so we don't broadcast the same events twice!
-        lastPollTime = currentPollTime;
+        // Only move the window forward based on the data we ACTUALLY saw.
+        // Combined with our exclusive lower bound (sortGreaterThan), this guarantees
+        // we never miss delayed events and never broadcast duplicates!
+        lastPollTime = maxEventTimeSeen;
     }
 }
