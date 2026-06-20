@@ -132,6 +132,7 @@ class EventServiceTest {
         eventService.pollForNewEvents();
         eventService.pollForNewEvents();
 
+        verify(eventRepository, times(2)).findRecentEvents(eq(SportType.SOCCER), eq(1000L));
         verify(sseEmitterService, times(2)).broadcast(eventDtoCaptor.capture());
         List<EventDto> broadcasted = eventDtoCaptor.getAllValues();
         assertEquals("1", broadcasted.get(0).eventId());
