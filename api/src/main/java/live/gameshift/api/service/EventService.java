@@ -36,7 +36,7 @@ public class EventService {
     @Scheduled(fixedRate = 5000)
     public void pollForNewEvents() {
         Long pollLowerBound = lastPollTime;
-        Set<String> alreadyProcessedAtLowerBound = new HashSet<>(processedEventIdsAtLastPollTime);
+        Set<String> alreadyProcessedAtLowerBound = processedEventIdsAtLastPollTime;
         Long maxEventTimeSeen = lastPollTime;
         Set<String> processedEventIdsAtMaxTimestamp = new HashSet<>(processedEventIdsAtLastPollTime);
         
