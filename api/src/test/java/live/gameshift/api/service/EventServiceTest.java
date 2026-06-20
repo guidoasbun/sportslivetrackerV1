@@ -13,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +40,7 @@ class EventServiceTest {
     void setUp() {
         eventService = new EventService(eventRepository, sseEmitterService);
         // Reset lastPollTime to a known value for testing
-        ReflectionTestUtils.setField(eventService, "lastPollTime", Instant.ofEpochMilli(1000L));
+        ReflectionTestUtils.setField(eventService, "lastPollTime", 1000L);
     }
 
     @Test
@@ -52,22 +51,22 @@ class EventServiceTest {
         event1.setSportType(SportType.SOCCER);
         event1.setAction("goal");
         event1.setParticipants(Map.of("player", "Messi"));
-        event1.setTimestamp(Instant.ofEpochMilli(1500L)); // Greater than 1000L
+        event1.setEventTimestamp(1500L); // Greater than 1000L
 
         Event event2 = new Event();
         event2.setEventId("2");
         event2.setSportType(SportType.SOCCER);
         event2.setAction("card");
         event2.setParticipants(Map.of("player", "Ronaldo"));
-        event2.setTimestamp(Instant.ofEpochMilli(2000L)); // Max timestamp
+        event2.setEventTimestamp(2000L); // Max timestamp
 
-        when(eventRepository.findRecentEvents(eq(SportType.SOCCER), eq(Instant.ofEpochMilli(1000L))))
+        when(eventRepository.findRecentEvents(eq(SportType.SOCCER), eq(1000L)))
                 .thenReturn(List.of(event1, event2));
         
         // Mock empty for others
         for (SportType type : SportType.values()) {
             if (type != SportType.SOCCER) {
-                when(eventRepository.findRecentEvents(eq(type), eq(Instant.ofEpochMilli(1000L)))).thenReturn(Collections.emptyList());
+                when(eventRepository.findRecentEvents(eq(type), eq(1000L))).thenReturn(Collections.emptyList());
             }
         }
 
@@ -82,15 +81,15 @@ class EventServiceTest {
         assertEquals("2", broadcasted.get(1).eventId());
         
         // Verify window moved to the max timestamp seen
-        Instant updatedPollTime = (Instant) ReflectionTestUtils.getField(eventService, "lastPollTime");
-        assertEquals(Instant.ofEpochMilli(2000L), updatedPollTime);
+        Long updatedPollTime = (Long) ReflectionTestUtils.getField(eventService, "lastPollTime");
+        assertEquals(2000L, updatedPollTime);
     }
     
     @Test
     void pollForNewEvents_shouldNotUpdateLastPollTime_whenNoNewEvents() {
         // Arrange
         for (SportType type : SportType.values()) {
-            when(eventRepository.findRecentEvents(eq(type), eq(Instant.ofEpochMilli(1000L)))).thenReturn(Collections.emptyList());
+            when(eventRepository.findRecentEvents(eq(type), eq(1000L))).thenReturn(Collections.emptyList());
         }
 
         // Act
@@ -100,7 +99,7 @@ class EventServiceTest {
         verify(sseEmitterService, never()).broadcast(any());
         
         // Verify window did not move
-        Instant updatedPollTime = (Instant) ReflectionTestUtils.getField(eventService, "lastPollTime");
-        assertEquals(Instant.ofEpochMilli(1000L), updatedPollTime);
+        Long updatedPollTime = (Long) ReflectionTestUtils.getField(eventService, "lastPollTime");
+        assertEquals(1000L, updatedPollTime);
     }
 }

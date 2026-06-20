@@ -6,7 +6,6 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbParti
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondaryPartitionKey;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondarySortKey;
 
-import java.time.Instant;
 import java.util.Map;
 
 @DynamoDbBean
@@ -17,7 +16,7 @@ public class Event {
     private String action;
     private Map<String, String> participants;
     private String rawPayload;
-    private Instant timestamp;
+    private Long eventTimestamp;
 
     public Event() {
     }
@@ -42,11 +41,11 @@ public class Event {
 
     // 3. GSI Sort Key
     @DynamoDbSecondarySortKey(indexNames = "sport-type-timestamp-index")
-    public Instant getTimestamp() {
-        return timestamp;
+    public Long getEventTimestamp() {
+        return eventTimestamp;
     }
-    public void setTimestamp(Instant timestamp) {
-        this.timestamp = timestamp;
+    public void setEventTimestamp(Long eventTimestamp) {
+        this.eventTimestamp = eventTimestamp;
     }
 
     // 4. Standard fields

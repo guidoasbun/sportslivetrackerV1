@@ -5,8 +5,6 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondaryPartitionKey;
 
-import java.time.Instant;
-
 @DynamoDbBean
 public class Summary {
 
@@ -14,7 +12,7 @@ public class Summary {
     private String eventId;
     private SportType sportType;
     private String commentary;
-    private Instant timestamp;
+    private Long timestamp;
 
     public Summary() {
     }
@@ -52,10 +50,10 @@ public class Summary {
         this.commentary = commentary;
     }
 
-    public Instant getTimestamp() {
+    public Long getTimestamp() {
         return timestamp;
     }
-    public void setTimestamp(Instant timestamp) {
+    public void setTimestamp(Long timestamp) {
         this.timestamp = timestamp;
     }
 }

@@ -4,7 +4,6 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import live.gameshift.lambda.model.Event;
 import live.gameshift.lambda.model.SportEvent;
 import live.gameshift.lambda.model.Summary;
@@ -12,8 +11,6 @@ import live.gameshift.lambda.service.BedrockCommentaryService;
 import live.gameshift.lambda.service.DynamoDbService;
 
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-
 public class SportEventHandler implements RequestHandler<KinesisEvent, Void> {
 
     private final ObjectMapper objectMapper;
@@ -22,7 +19,7 @@ public class SportEventHandler implements RequestHandler<KinesisEvent, Void> {
 
     public SportEventHandler() {
         // This constructor is called exactly once when AWS spins up the container
-        this.objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        this.objectMapper = new ObjectMapper();
 
         // Grab environment variables injected securely by Terraform
         String eventTableName = System.getenv("EVENTS_TABLE_NAME");
@@ -53,7 +50,7 @@ public class SportEventHandler implements RequestHandler<KinesisEvent, Void> {
                 event.setAction(sportEvent.getAction());
                 event.setParticipants(sportEvent.getParticipants());
                 event.setRawPayload(sportEvent.getRawPayload());
-                event.setTimestamp(sportEvent.getTimestamp());
+                event.setEventTimestamp(sportEvent.getEventTimestamp());
 
                 dynamoDbService.getEventRepository().save(event);
                 context.getLogger().log("Saved Event to DynamoDB: " + event.getEventId());
@@ -67,7 +64,7 @@ public class SportEventHandler implements RequestHandler<KinesisEvent, Void> {
                 summary.setEventId(sportEvent.getEventId());
                 summary.setSportType(sportEvent.getSportType());
                 summary.setCommentary(commentary);
-                summary.setTimestamp(Instant.now());
+                summary.setTimestamp(System.currentTimeMillis());
 
                 dynamoDbService.getSummaryRepository().save(summary);
                 context.getLogger().log("Saved Summary to DynamoDB: " + summary.getEventId());

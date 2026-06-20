@@ -4,7 +4,6 @@ import live.gameshift.lambda.model.enums.SportType;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 
-import java.time.Instant;
 import java.util.Map;
 
 @DynamoDbBean
@@ -15,7 +14,7 @@ public class Event {
     private String action;
     private Map<String, String> participants;
     private String rawPayload;
-    private Instant timestamp;
+    private Long eventTimestamp;
 
     public Event() {
     }
@@ -61,11 +60,11 @@ public class Event {
         this.rawPayload = rawPayload;
     }
 
-    public Instant getTimestamp() {
-        return timestamp;
+    public Long getEventTimestamp() {
+        return eventTimestamp;
     }
 
-    public void setTimestamp(Instant timestamp) {
-        this.timestamp = timestamp;
+    public void setEventTimestamp(Long eventTimestamp) {
+        this.eventTimestamp = eventTimestamp;
     }
 }

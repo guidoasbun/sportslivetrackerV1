@@ -1,6 +1,5 @@
 package live.gameshift.producer.model;
 
-import java.time.Instant;
 import java.util.Map;
 
 public class SportEvent {
@@ -10,7 +9,7 @@ public class SportEvent {
     private String action;
     private Map<String, String> participants;
     private String rawPayload;
-    private Instant timestamp;
+    private Long eventTimestamp;
 
     public SportEvent() {}
 
@@ -21,7 +20,7 @@ public class SportEvent {
         this.action = action;
         this.participants = participants;
         this.rawPayload = rawPayload;
-        this.timestamp = Instant.now();
+        this.eventTimestamp = System.currentTimeMillis();
     }
 
     public String getEventId() { return eventId; }
@@ -39,6 +38,6 @@ public class SportEvent {
     public String getRawPayload() { return rawPayload; }
     public void setRawPayload(String rawPayload) { this.rawPayload = rawPayload; }
 
-    public Instant getTimestamp() { return timestamp; }
-    public void setTimestamp(Instant timestamp) { this.timestamp = timestamp; }
+    public Long getEventTimestamp() { return eventTimestamp; }
+    public void setEventTimestamp(Long eventTimestamp) { this.eventTimestamp = eventTimestamp; }
 }

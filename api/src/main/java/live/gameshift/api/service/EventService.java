@@ -19,27 +19,27 @@ public class EventService {
     private final EventRepository eventRepository;
     private final SseEmitterService sseEmitterService;
     
-    private Instant lastPollTime;
+    private Long lastPollTime;
 
     public EventService(EventRepository eventRepository, SseEmitterService sseEmitterService) {
         this.eventRepository = eventRepository;
         this.sseEmitterService = sseEmitterService;
         // Start polling from the exact moment the server starts
-        this.lastPollTime = Instant.now();
+        this.lastPollTime = Instant.now().toEpochMilli();
     }
 
     // Tells Spring to run this method automatically every 5,000 milliseconds
     @Scheduled(fixedRate = 5000)
     public void pollForNewEvents() {
-        Instant maxEventTimeSeen = lastPollTime;
+        Long maxEventTimeSeen = lastPollTime;
         
         for (SportType sportType : SportType.values()) {
             List<Event> recentEvents = eventRepository.findRecentEvents(sportType, lastPollTime);
             
             for (Event event : recentEvents) {
                 // Track the highest timestamp we've successfully processed
-                if (event.getTimestamp().isAfter(maxEventTimeSeen)) {
-                    maxEventTimeSeen = event.getTimestamp();
+                if (event.getEventTimestamp() > maxEventTimeSeen) {
+                    maxEventTimeSeen = event.getEventTimestamp();
                 }
 
                 // Map the Database Entity to our decoupled DTO
@@ -48,7 +48,7 @@ public class EventService {
                         event.getSportType(),
                         event.getAction(),
                         event.getParticipants(),
-                        event.getTimestamp().toEpochMilli()
+                        event.getEventTimestamp()
                 );
                 
                 log.info("Broadcasting new event: {} - {}", sportType, event.getAction());

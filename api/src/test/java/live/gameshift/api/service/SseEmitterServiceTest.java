@@ -34,12 +34,12 @@ class SseEmitterServiceTest {
     }
 
     @Test
-    void broadcast_shouldSilentlyRemoveDeadEmitters() {
+    void broadcast_shouldExecuteWithoutExceptions() {
         // Create an emitter
         sseEmitterService.createEmitter();
         
-        // We can't perfectly simulate a broken network pipe in a simple unit test, 
-        // but we can ensure broadcasting to the internal list doesn't crash the app.
+        // We can't easily simulate a broken network pipe here because SseEmitter is instantiated 
+        // directly inside the service, but we can ensure broadcasting doesn't crash the app.
         EventDto dto = new EventDto("1", SportType.SOCCER, "goal", null, 1000L);
         
         // This should run without throwing any exceptions

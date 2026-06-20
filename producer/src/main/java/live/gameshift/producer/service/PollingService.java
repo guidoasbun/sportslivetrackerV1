@@ -55,7 +55,7 @@ public class PollingService {
         SportEvent event = new SportEvent();
         event.setEventId(java.util.UUID.randomUUID().toString());
         event.setSportType(sportType);
-        event.setTimestamp(java.time.Instant.now());
+        event.setEventTimestamp(System.currentTimeMillis());
         event.setRawPayload("{ \"mock\": true }");
 
         java.util.Map<String, String> participants = new java.util.HashMap<>();
