@@ -38,7 +38,7 @@ public class EventService {
         Long pollLowerBound = lastPollTime;
         Set<String> alreadyProcessedAtLowerBound = processedEventIdsAtLastPollTime;
         Long maxEventTimeSeen = lastPollTime;
-        Set<String> processedEventIdsAtMaxTimestamp = new HashSet<>(processedEventIdsAtLastPollTime);
+        Set<String> processedEventIdsAtMaxTimestamp = new HashSet<>();
         
         for (SportType sportType : SportType.values()) {
             List<Event> recentEvents = eventRepository.findRecentEvents(sportType, pollLowerBound);
@@ -74,6 +74,9 @@ public class EventService {
         
         // Keep an inclusive lower bound while de-duping IDs we've already emitted
         // at the watermark timestamp. This allows late arrivals with the same timestamp.
+        if (maxEventTimeSeen.equals(pollLowerBound)) {
+            processedEventIdsAtMaxTimestamp.addAll(processedEventIdsAtLastPollTime);
+        }
         lastPollTime = maxEventTimeSeen;
         processedEventIdsAtLastPollTime = processedEventIdsAtMaxTimestamp;
     }

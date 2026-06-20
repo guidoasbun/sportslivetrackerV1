@@ -136,6 +136,7 @@ class EventServiceTest {
         List<EventDto> broadcasted = eventDtoCaptor.getAllValues();
         assertEquals("1", broadcasted.get(0).eventId());
         assertEquals("2", broadcasted.get(1).eventId());
+        assertEquals(1, broadcasted.stream().filter(dto -> "1".equals(dto.eventId())).count());
 
         Long updatedPollTime = (Long) ReflectionTestUtils.getField(eventService, "lastPollTime");
         assertEquals(1000L, updatedPollTime);
