@@ -102,4 +102,42 @@ class EventServiceTest {
         Long updatedPollTime = (Long) ReflectionTestUtils.getField(eventService, "lastPollTime");
         assertEquals(1000L, updatedPollTime);
     }
+
+    @Test
+    void pollForNewEvents_shouldBroadcastLateEventsWithSameTimestampWithoutDuplicates() {
+        Event first = new Event();
+        first.setEventId("1");
+        first.setSportType(SportType.SOCCER);
+        first.setAction("goal");
+        first.setParticipants(Map.of("player", "Messi"));
+        first.setEventTimestamp(1000L);
+
+        Event lateArrival = new Event();
+        lateArrival.setEventId("2");
+        lateArrival.setSportType(SportType.SOCCER);
+        lateArrival.setAction("goal");
+        lateArrival.setParticipants(Map.of("player", "Ronaldo"));
+        lateArrival.setEventTimestamp(1000L);
+
+        when(eventRepository.findRecentEvents(eq(SportType.SOCCER), eq(1000L)))
+                .thenReturn(List.of(first))
+                .thenReturn(List.of(first, lateArrival));
+
+        for (SportType type : SportType.values()) {
+            if (type != SportType.SOCCER) {
+                when(eventRepository.findRecentEvents(eq(type), eq(1000L))).thenReturn(Collections.emptyList());
+            }
+        }
+
+        eventService.pollForNewEvents();
+        eventService.pollForNewEvents();
+
+        verify(sseEmitterService, times(2)).broadcast(eventDtoCaptor.capture());
+        List<EventDto> broadcasted = eventDtoCaptor.getAllValues();
+        assertEquals("1", broadcasted.get(0).eventId());
+        assertEquals("2", broadcasted.get(1).eventId());
+
+        Long updatedPollTime = (Long) ReflectionTestUtils.getField(eventService, "lastPollTime");
+        assertEquals(1000L, updatedPollTime);
+    }
 }

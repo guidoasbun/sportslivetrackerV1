@@ -32,8 +32,8 @@ public class EventRepository {
     }
 
     public List<Event> findRecentEvents(SportType sportType, Long sinceEpochMillis) {
-        // Query condition: "Partition key equals SportType AND Sort key > sinceEpochMillis"
-        QueryConditional queryConditional = QueryConditional.sortGreaterThan(
+        // Query condition: "Partition key equals SportType AND Sort key >= sinceEpochMillis"
+        QueryConditional queryConditional = QueryConditional.sortGreaterThanOrEqualTo(
                 Key.builder()
                         .partitionValue(sportType.name())
                         .sortValue(sinceEpochMillis) 

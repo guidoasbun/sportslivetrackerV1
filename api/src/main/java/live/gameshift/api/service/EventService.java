@@ -10,7 +10,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class EventService {
@@ -20,26 +22,40 @@ public class EventService {
     private final SseEmitterService sseEmitterService;
     
     private Long lastPollTime;
+    private Set<String> processedEventIdsAtLastPollTime;
 
     public EventService(EventRepository eventRepository, SseEmitterService sseEmitterService) {
         this.eventRepository = eventRepository;
         this.sseEmitterService = sseEmitterService;
         // Start polling from the exact moment the server starts
         this.lastPollTime = Instant.now().toEpochMilli();
+        this.processedEventIdsAtLastPollTime = new HashSet<>();
     }
 
     // Tells Spring to run this method automatically every 5,000 milliseconds
     @Scheduled(fixedRate = 5000)
     public void pollForNewEvents() {
+        Long pollLowerBound = lastPollTime;
+        Set<String> alreadyProcessedAtLowerBound = new HashSet<>(processedEventIdsAtLastPollTime);
         Long maxEventTimeSeen = lastPollTime;
+        Set<String> processedEventIdsAtMaxTimestamp = new HashSet<>(processedEventIdsAtLastPollTime);
         
         for (SportType sportType : SportType.values()) {
-            List<Event> recentEvents = eventRepository.findRecentEvents(sportType, lastPollTime);
+            List<Event> recentEvents = eventRepository.findRecentEvents(sportType, pollLowerBound);
             
             for (Event event : recentEvents) {
+                if (event.getEventTimestamp().equals(pollLowerBound)
+                        && alreadyProcessedAtLowerBound.contains(event.getEventId())) {
+                    continue;
+                }
+
                 // Track the highest timestamp we've successfully processed
                 if (event.getEventTimestamp() > maxEventTimeSeen) {
                     maxEventTimeSeen = event.getEventTimestamp();
+                    processedEventIdsAtMaxTimestamp.clear();
+                }
+                if (event.getEventTimestamp().equals(maxEventTimeSeen)) {
+                    processedEventIdsAtMaxTimestamp.add(event.getEventId());
                 }
 
                 // Map the Database Entity to our decoupled DTO
@@ -56,9 +72,9 @@ public class EventService {
             }
         }
         
-        // Only move the window forward based on the data we ACTUALLY saw.
-        // Combined with our exclusive lower bound (sortGreaterThan), this guarantees
-        // we never miss delayed events and never broadcast duplicates!
+        // Keep an inclusive lower bound while de-duping IDs we've already emitted
+        // at the watermark timestamp. This allows late arrivals with the same timestamp.
         lastPollTime = maxEventTimeSeen;
+        processedEventIdsAtLastPollTime = processedEventIdsAtMaxTimestamp;
     }
 }
