@@ -27,19 +27,26 @@ public class SseEmitterService {
         try {
             // Send a welcome message so you can see it in Postman immediately!
             emitter.send(SseEmitter.event().name("message").data("Welcome to SportsLiveTracker API! Your SSE connection is successful."));
+            log.info("New SSE connection created successfully");
         } catch (IOException e) {
+            log.error("Error creating new SSE connection", e);
             emitter.completeWithError(e);
             this.emitters.remove(emitter);
         }
 
         // When a client closes their browser, we remove them from the list
-        emitter.onCompletion(() -> this.emitters.remove(emitter));
+        emitter.onCompletion(() -> {
+            log.debug("SSE connection completed");
+            this.emitters.remove(emitter);
+        });
         emitter.onTimeout(() -> {
+            log.debug("SSE connection timed out");
             emitter.complete();
             this.emitters.remove(emitter);
         });
-        emitter.onError((e) -> {
-            emitter.completeWithError(e);
+        emitter.onError((Throwable e) -> {
+            log.error("SSE connection error", e);
+            emitter.completeWithError(e != null ? e : new RuntimeException("Unknown SSE error"));
             this.emitters.remove(emitter);
         });
 
@@ -47,6 +54,11 @@ public class SseEmitterService {
     }
 
     public void broadcast(EventDto eventDto) {
+        if (eventDto == null) {
+            log.warn("Attempted to broadcast a null eventDto");
+            return;
+        }
+
         List<SseEmitter> deadEmitters = new ArrayList<>();
         
         this.emitters.forEach(emitter -> {
@@ -55,6 +67,7 @@ public class SseEmitterService {
                 emitter.send(SseEmitter.event().name("message").data(eventDto));
             } catch (IOException e) {
                 // If we get an exception, the client probably disconnected abruptly
+                log.debug("Failed to send event to emitter, client probably disconnected", e);
                 emitter.completeWithError(e);
                 deadEmitters.add(emitter);
             }
