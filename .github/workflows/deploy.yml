@@ -1,0 +1,118 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'dev'
+        type: choice
+        options: [dev, prod]
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'dev' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'corretto'
+          cache: maven
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Login to ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          platforms: linux/arm64
+
+      - name: Set image tag
+        run: echo "IMAGE_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Build and push producer
+        uses: docker/build-push-action@v6
+        with:
+          context: ./producer
+          file: ./docker/producer.Dockerfile
+          platforms: linux/arm64
+          push: true
+          provenance: false
+          tags: |
+            ${{ steps.ecr-login.outputs.registry }}/sportslivetracker/producer:latest
+            ${{ steps.ecr-login.outputs.registry }}/sportslivetracker/producer:${{ env.IMAGE_TAG }}
+
+      - name: Build and push api
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./docker/api.Dockerfile
+          platforms: linux/arm64
+          push: true
+          provenance: false
+          tags: |
+            ${{ steps.ecr-login.outputs.registry }}/sportslivetracker/api:latest
+            ${{ steps.ecr-login.outputs.registry }}/sportslivetracker/api:${{ env.IMAGE_TAG }}
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./docker/frontend.Dockerfile
+          platforms: linux/arm64
+          push: true
+          provenance: false
+          tags: |
+            ${{ steps.ecr-login.outputs.registry }}/sportslivetracker/frontend:latest
+            ${{ steps.ecr-login.outputs.registry }}/sportslivetracker/frontend:${{ env.IMAGE_TAG }}
+
+      - name: Build Lambda
+        run: |
+          ./mvnw clean package -pl lambda -am
+
+      - name: Deploy to ECS and Lambda
+        run: |
+          ENV="${{ github.event.inputs.environment || 'dev' }}"
+          
+          # Update Lambda function
+          aws lambda update-function-code \
+            --function-name "sportslivetracker-${ENV}-processor" \
+            --zip-file fileb://lambda/target/lambda-0.0.1-SNAPSHOT.jar > /dev/null
+
+          # Update ECS services
+          aws ecs update-service \
+            --cluster "sportslivetracker-${ENV}-cluster" \
+            --service "sportslivetracker-${ENV}-producer" \
+            --force-new-deployment > /dev/null
+            
+          aws ecs update-service \
+            --cluster "sportslivetracker-${ENV}-cluster" \
+            --service "sportslivetracker-${ENV}-api" \
+            --force-new-deployment > /dev/null
+            
+          aws ecs update-service \
+            --cluster "sportslivetracker-${ENV}-cluster" \
+            --service "sportslivetracker-${ENV}-frontend" \
+            --force-new-deployment > /dev/null
