@@ -114,6 +114,13 @@ function LoginForm() {
                     onClick={() => {
                         const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID;
                         const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN;
+                        
+                        if (!clientId || !domain) {
+                            console.error("Missing required environment variables for Google OAuth.");
+                            alert("Google Login is not configured properly on this environment.");
+                            return;
+                        }
+
                         const redirectUri = encodeURIComponent(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/auth/callback/cognito`);
                         window.location.href = `${domain}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=email+openid+profile&redirect_uri=${redirectUri}&identity_provider=Google`;
                     }}

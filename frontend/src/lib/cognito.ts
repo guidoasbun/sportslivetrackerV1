@@ -3,6 +3,7 @@ import {
     SignUpCommand,
     ConfirmSignUpCommand,
     InitiateAuthCommand,
+    GetUserCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 
 // Initialize the Cognito client using the region from our environment
@@ -86,3 +87,12 @@ export async function exchangeCodeForTokens(code: string, redirectUri: string) {
     return await response.json();
 }
 
+/**
+ * Validates an access token by fetching the user profile from Cognito
+ */
+export async function getUser(accessToken: string) {
+    const command = new GetUserCommand({
+        AccessToken: accessToken,
+    });
+    return await client.send(command);
+}

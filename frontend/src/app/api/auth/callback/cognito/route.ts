@@ -19,8 +19,8 @@ export async function GET(request: Request) {
         const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/auth/callback/cognito`;
         const tokens = await exchangeCodeForTokens(code, redirectUri);
         
-        // We use the ID token for session auth because it contains user claims (email, name, etc.)
-        await createSession(tokens.id_token);
+        // We use the Access token for session auth so we can validate it against AWS Cognito GetUser
+        await createSession(tokens.access_token);
 
         return NextResponse.redirect(new URL('/dashboard', request.url));
     } catch (error: any) {

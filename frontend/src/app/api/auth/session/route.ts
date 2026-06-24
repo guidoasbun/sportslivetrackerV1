@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/sessions";
+import { getUser } from "@/lib/cognito";
 
 export async function GET() {
     const session = await getSession();
@@ -9,7 +10,13 @@ export async function GET() {
         return NextResponse.json({ authenticated: false }, { status: 401 });
     }
 
-    // Cookie found! You could optionally decode the JWT here to return the user's email
-    // For now, simply knowing they are authenticated is enough.
-    return NextResponse.json({ authenticated: true });
+    try {
+        // Validate the JWT by calling Cognito GetUser with the AccessToken
+        await getUser(session);
+        return NextResponse.json({ authenticated: true });
+    } catch (error) {
+        // Token is invalid, expired, or forged
+        console.error("Session token validation failed:", error);
+        return NextResponse.json({ authenticated: false }, { status: 401 });
+    }
 }
