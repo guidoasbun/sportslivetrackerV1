@@ -1,5 +1,4 @@
 import { SportEvent } from '@/types/event';
-import CommentaryPanel from './CommentaryPanel';
 import SportBadge from './SportsBadge';
 
 interface EventFeedProps {
@@ -55,8 +54,6 @@ export default function EventFeed({ events }: EventFeedProps) {
                         ))}
                     </div>
 
-                    {/* Add the AI Commentary Panel at the bottom of the card */}
-                    <CommentaryPanel eventId={event.eventId} />
                 </div>
             ))}
         </div>

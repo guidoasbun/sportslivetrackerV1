@@ -24,7 +24,7 @@ export function useEventBuffer(offsetSeconds: number) {
         eventSource.onmessage = (message) => {
 
             // Ignore the plain text welcome message sent by the Java backend
-            if (message.data.includes('Welcome')) return;
+            if (message.data.startsWith('Welcome')) return;
 
             try {
                 const newEvent: SportEvent = JSON.parse(message.data);

@@ -83,8 +83,8 @@ resource "aws_cognito_identity_provider" "google" {
 
 # ──────────────────────────────────────────────────────────────
 # App client for the Next.js frontend
-# generate_secret = true because NextAuth.js runs server-side
-# and can keep the secret safe — never exposed to the browser.
+# generate_secret = false because this is a public client communicating
+# directly with Cognito, and a client secret cannot be securely stored in the browser.
 # ──────────────────────────────────────────────────────────────
 resource "aws_cognito_user_pool_client" "frontend" {
   name         = "${var.project_name}-${var.environment}-frontend-client"

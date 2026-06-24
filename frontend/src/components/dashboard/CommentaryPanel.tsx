@@ -12,7 +12,7 @@ export default function CommentaryPanel({ eventId }: CommentaryPanelProps) {
     const [isGenerating, setIsGenerating] = useState(true);
 
     useEffect(() => {
-        let interval: NodeJS.Timeout;
+        let interval: NodeJS.Timeout | undefined;
 
         // We create a function to ask the backend for the AI summary
         const checkSummary = async () => {
@@ -21,7 +21,7 @@ export default function CommentaryPanel({ eventId }: CommentaryPanelProps) {
                 setSummary(data);
                 setIsGenerating(false);
                 // Once we have the data, we stop asking!
-                clearInterval(interval);
+                if (interval) clearInterval(interval);
             }
         };
 
@@ -32,8 +32,11 @@ export default function CommentaryPanel({ eventId }: CommentaryPanelProps) {
         interval = setInterval(checkSummary, 2500);
 
         // Cleanup the interval if the user leaves the page before the AI finishes
-        return () => clearInterval(interval);
+        return () => {
+            if (interval) clearInterval(interval);
+        };
     }, [eventId]);
+
 
     // While waiting for Bedrock, show a nice loading state
     if (isGenerating) {
