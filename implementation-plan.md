@@ -229,7 +229,7 @@ Files to create (in order):
 
 ---
 
-### Phase 5 — Frontend (Next.js) (In Progress - Google Auth)
+### Phase 5 — Frontend (Next.js)
 
 Files to create (in order):
 1. `frontend/package.json`
