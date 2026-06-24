@@ -12,7 +12,7 @@ const client = new CognitoIdentityProviderClient({
 });
 
 // We need the App Client ID from our Terraform-provisioned Cognito setup
-const CLIENT_ID = process.env.COGNITO_CLIENT_ID!;
+const CLIENT_ID = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID!;
 
 /**
  * Registers a new user with their email and password
@@ -61,8 +61,8 @@ export async function login(email: string, password: string) {
  * Exchanges an authorization code for tokens via the Cognito token endpoint
  */
 export async function exchangeCodeForTokens(code: string, redirectUri: string) {
-    const domain = process.env.COGNITO_DOMAIN!;
-    const clientId = process.env.COGNITO_CLIENT_ID!;
+    const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN!;
+    const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID!;
 
     const params = new URLSearchParams({
         grant_type: 'authorization_code',

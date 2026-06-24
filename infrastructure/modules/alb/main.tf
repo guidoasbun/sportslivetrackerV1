@@ -193,6 +193,26 @@ resource "aws_lb_listener" "https" {
 }
 
 # ──────────────────────────────────────────────────────────────
+# Listener rule — /api/auth/* → Frontend target group (Next.js Auth)
+# Priority 5 wins over the generic /api/* rule below.
+# ──────────────────────────────────────────────────────────────
+resource "aws_lb_listener_rule" "frontend_auth_api" {
+  listener_arn = aws_lb_listener.https.arn
+  priority     = 5
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.frontend.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/auth/*"]
+    }
+  }
+}
+
+# ──────────────────────────────────────────────────────────────
 # Listener rule — /api/* → API target group
 # Priority 10 wins before the default forward-to-frontend action.
 # ──────────────────────────────────────────────────────────────
