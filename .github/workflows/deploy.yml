@@ -61,8 +61,8 @@ jobs:
           push: true
           provenance: false
           tags: |
-            ${{ steps.ecr-login.outputs.registry }}/sportslivetracker/producer:latest
-            ${{ steps.ecr-login.outputs.registry }}/sportslivetracker/producer:${{ env.IMAGE_TAG }}
+            ${{ steps.ecr-login.outputs.registry }}/sportslivetracker-${{ github.event.inputs.environment || 'dev' }}-producer:latest
+            ${{ steps.ecr-login.outputs.registry }}/sportslivetracker-${{ github.event.inputs.environment || 'dev' }}-producer:${{ env.IMAGE_TAG }}
 
       - name: Build and push api
         uses: docker/build-push-action@v6
@@ -73,8 +73,8 @@ jobs:
           push: true
           provenance: false
           tags: |
-            ${{ steps.ecr-login.outputs.registry }}/sportslivetracker/api:latest
-            ${{ steps.ecr-login.outputs.registry }}/sportslivetracker/api:${{ env.IMAGE_TAG }}
+            ${{ steps.ecr-login.outputs.registry }}/sportslivetracker-${{ github.event.inputs.environment || 'dev' }}-api:latest
+            ${{ steps.ecr-login.outputs.registry }}/sportslivetracker-${{ github.event.inputs.environment || 'dev' }}-api:${{ env.IMAGE_TAG }}
 
       - name: Build and push frontend
         uses: docker/build-push-action@v6
@@ -85,8 +85,8 @@ jobs:
           push: true
           provenance: false
           tags: |
-            ${{ steps.ecr-login.outputs.registry }}/sportslivetracker/frontend:latest
-            ${{ steps.ecr-login.outputs.registry }}/sportslivetracker/frontend:${{ env.IMAGE_TAG }}
+            ${{ steps.ecr-login.outputs.registry }}/sportslivetracker-${{ github.event.inputs.environment || 'dev' }}-frontend:latest
+            ${{ steps.ecr-login.outputs.registry }}/sportslivetracker-${{ github.event.inputs.environment || 'dev' }}-frontend:${{ env.IMAGE_TAG }}
 
       - name: Build Lambda
         run: |
