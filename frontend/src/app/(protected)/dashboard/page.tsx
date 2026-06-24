@@ -1,0 +1,105 @@
+"use client";
+
+import { useState } from 'react';
+import OffsetSlider from '@/components/dashboard/OffsetSlider';
+import EventFeed from '@/components/dashboard/EventFeed';
+import CommentaryPanel from '@/components/dashboard/CommentaryPanel';
+import { useEventBuffer } from '@/lib/useEventBuffer';
+
+const SPORTS = ['SOCCER', 'FOOTBALL', 'BASKETBALL', 'BASEBALL', 'HOCKEY', 'FORMULA_1'];
+
+export default function DashboardPage() {
+    const [selectedSport, setSelectedSport] = useState<string>('SOCCER');
+
+    // Start at 0 seconds delay (real-time)
+    const [offsetSeconds, setOffsetSeconds] = useState<number>(0);
+
+    // Destructure { visibleEvents } from the hook, passing only offsetSeconds
+    const { visibleEvents } = useEventBuffer(offsetSeconds);
+
+    // Filter the events locally so we only see the sport we clicked on!
+    const filteredEvents = visibleEvents.filter(e => e.sportType === selectedSport);
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+
+            {/* Top Controls: Sport Selector and TV Delay Slider */}
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '24px',
+                background: 'rgba(255,255,255,0.03)',
+                padding: '20px',
+                borderRadius: '16px',
+                border: '1px solid rgba(255,255,255,0.05)'
+            }}>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    {SPORTS.map(sport => (
+                        <button
+                            key={sport}
+                            onClick={() => setSelectedSport(sport)}
+                            style={{
+                                padding: '10px 20px',
+                                borderRadius: '24px',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                background: selectedSport === sport ? 'linear-gradient(90deg, #00b4db, #0083b0)' : 'transparent',
+                                color: 'white',
+                                fontWeight: selectedSport === sport ? 'bold' : 'normal',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                boxShadow: selectedSport === sport ? '0 4px 12px rgba(0, 180, 219, 0.3)' : 'none'
+                            }}
+                        >
+                            {sport}
+                        </button>
+                    ))}
+                </div>
+
+                <OffsetSlider offsetSeconds={offsetSeconds} onChange={setOffsetSeconds} />
+            </div>
+
+            {/* Main Content Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '24px', alignItems: 'start' }}>
+
+                {/* Left Side: Live Feed */}
+                <div style={{
+                    background: 'rgba(255,255,255,0.02)',
+                    border: '1px solid rgba(255,255,255,0.05)',
+                    borderRadius: '16px',
+                    padding: '24px'
+                }}>
+                    <h3 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '24px', color: '#00b4db' }}>
+                        Live Feed
+                    </h3>
+                    <EventFeed events={filteredEvents} />
+                </div>
+
+                {/* Right Side: AI Commentary */}
+                <div style={{
+                    background: 'rgba(255,255,255,0.02)',
+                    border: '1px solid rgba(255,255,255,0.05)',
+                    borderRadius: '16px',
+                    padding: '24px',
+                    position: 'sticky',
+                    top: '24px'
+                }}>
+                    <h3 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '24px', color: '#00b4db' }}>
+                        Color Commentary
+                    </h3>
+
+                    {/* Ensure we actually have an event before rendering the panel to avoid undefined errors */}
+                    {filteredEvents.length > 0 ? (
+                        <CommentaryPanel eventId={filteredEvents[0].eventId} />
+                    ) : (
+                        <p style={{ color: '#888', fontStyle: 'italic', fontSize: '14px' }}>
+                            Waiting for live events to generate AI commentary...
+                        </p>
+                    )}
+                </div>
+
+            </div>
+        </div>
+    );
+}
