@@ -72,6 +72,24 @@ jobs:
             ${{ steps.ecr-login.outputs.registry }}/sports-tracker-${{ github.event.inputs.environment || 'dev' }}-api:latest
             ${{ steps.ecr-login.outputs.registry }}/sports-tracker-${{ github.event.inputs.environment || 'dev' }}-api:${{ env.IMAGE_TAG }}
 
+      - name: Fetch Frontend Environment Variables
+        id: frontend-env
+        run: |
+          ENV="${{ github.event.inputs.environment || 'dev' }}"
+          USER_POOL_ID=$(aws cognito-idp list-user-pools --max-results 10 --query "UserPools[?Name=='sports-tracker-${ENV}-user-pool'].Id" --output text)
+          CLIENT_ID=$(aws cognito-idp list-user-pool-clients --user-pool-id $USER_POOL_ID --query "UserPoolClients[0].ClientId" --output text)
+          DOMAIN_PREFIX=$(aws cognito-idp describe-user-pool --user-pool-id $USER_POOL_ID --query "UserPool.Domain" --output text)
+          
+          if [ "$ENV" == "prod" ]; then
+            APP_URL="https://www.gameshift.live"
+          else
+            APP_URL="https://${ENV}.gameshift.live"
+          fi
+          
+          echo "COGNITO_CLIENT_ID=$CLIENT_ID" >> $GITHUB_ENV
+          echo "COGNITO_DOMAIN=https://${DOMAIN_PREFIX}.auth.us-east-1.amazoncognito.com" >> $GITHUB_ENV
+          echo "APP_URL=$APP_URL" >> $GITHUB_ENV
+
       - name: Build and push frontend
         uses: docker/build-push-action@v6
         with:
@@ -79,6 +97,10 @@ jobs:
           file: ./docker/frontend.Dockerfile
           push: true
           provenance: false
+          build-args: |
+            NEXT_PUBLIC_COGNITO_CLIENT_ID=${{ env.COGNITO_CLIENT_ID }}
+            NEXT_PUBLIC_COGNITO_DOMAIN=${{ env.COGNITO_DOMAIN }}
+            NEXT_PUBLIC_APP_URL=${{ env.APP_URL }}
           tags: |
             ${{ steps.ecr-login.outputs.registry }}/sports-tracker-${{ github.event.inputs.environment || 'dev' }}-frontend:latest
             ${{ steps.ecr-login.outputs.registry }}/sports-tracker-${{ github.event.inputs.environment || 'dev' }}-frontend:${{ env.IMAGE_TAG }}

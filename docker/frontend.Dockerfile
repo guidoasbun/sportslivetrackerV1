@@ -2,6 +2,16 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+# Accept build arguments
+ARG NEXT_PUBLIC_COGNITO_CLIENT_ID
+ARG NEXT_PUBLIC_COGNITO_DOMAIN
+ARG NEXT_PUBLIC_APP_URL
+
+# Set them as environment variables during the build phase
+ENV NEXT_PUBLIC_COGNITO_CLIENT_ID=$NEXT_PUBLIC_COGNITO_CLIENT_ID
+ENV NEXT_PUBLIC_COGNITO_DOMAIN=$NEXT_PUBLIC_COGNITO_DOMAIN
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+
 # Install dependencies first (caches this step if package.json hasn't changed)
 COPY package*.json ./
 RUN npm ci
