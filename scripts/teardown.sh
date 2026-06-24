@@ -20,7 +20,7 @@ fi
 PROJECT="sportslivetracker"
 
 echo "==> Emptying ECR repositories"
-for REPO in "$PROJECT/producer" "$PROJECT/api" "$PROJECT/frontend"; do
+for REPO in "$PROJECT-$ENVIRONMENT-producer" "$PROJECT-$ENVIRONMENT-api" "$PROJECT-$ENVIRONMENT-frontend"; do
   IMAGE_IDS=$(aws ecr list-images \
     --repository-name "$REPO" \
     --region "$AWS_REGION" \
