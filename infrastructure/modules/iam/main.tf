@@ -313,6 +313,15 @@ resource "aws_iam_role_policy" "github_actions_deploy" {
         ]
         Resource = "arn:aws:lambda:${local.region}:${local.account_id}:function:${var.project_name}-${var.environment}-*"
       },
+      {
+        Effect = "Allow"
+        Action = [
+          "cognito-idp:ListUserPools",
+          "cognito-idp:ListUserPoolClients",
+          "cognito-idp:DescribeUserPool"
+        ]
+        Resource = "*"
+      },
     ]
   })
 }

@@ -7,12 +7,14 @@ export async function GET(request: Request) {
     const code = searchParams.get('code');
     const error = searchParams.get('error');
 
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
     if (error) {
-        return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(error)}`, request.url));
+        return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(error)}`, appUrl));
     }
 
     if (!code) {
-        return NextResponse.redirect(new URL('/login?error=No+code+provided', request.url));
+        return NextResponse.redirect(new URL('/login?error=No+code+provided', appUrl));
     }
 
     try {
@@ -22,9 +24,9 @@ export async function GET(request: Request) {
         // We use the Access token for session auth so we can validate it against AWS Cognito GetUser
         await createSession(tokens.access_token);
 
-        return NextResponse.redirect(new URL('/dashboard', request.url));
+        return NextResponse.redirect(new URL('/dashboard', appUrl));
     } catch (error: any) {
         console.error('Error exchanging code for tokens:', error);
-        return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(error.message)}`, request.url));
+        return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(error.message)}`, appUrl));
     }
 }
