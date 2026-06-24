@@ -17,7 +17,7 @@ if [ "$CONFIRM" != "$ENVIRONMENT" ]; then
   exit 1
 fi
 
-PROJECT="sportslivetracker"
+PROJECT="sports-tracker"
 
 echo "==> Emptying ECR repositories"
 for REPO in "$PROJECT-$ENVIRONMENT-producer" "$PROJECT-$ENVIRONMENT-api" "$PROJECT-$ENVIRONMENT-frontend"; do

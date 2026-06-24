@@ -61,8 +61,8 @@ jobs:
           push: true
           provenance: false
           tags: |
-            ${{ steps.ecr-login.outputs.registry }}/sportslivetracker-${{ github.event.inputs.environment || 'dev' }}-producer:latest
-            ${{ steps.ecr-login.outputs.registry }}/sportslivetracker-${{ github.event.inputs.environment || 'dev' }}-producer:${{ env.IMAGE_TAG }}
+            ${{ steps.ecr-login.outputs.registry }}/sports-tracker-${{ github.event.inputs.environment || 'dev' }}-producer:latest
+            ${{ steps.ecr-login.outputs.registry }}/sports-tracker-${{ github.event.inputs.environment || 'dev' }}-producer:${{ env.IMAGE_TAG }}
 
       - name: Build and push api
         uses: docker/build-push-action@v6
@@ -73,8 +73,8 @@ jobs:
           push: true
           provenance: false
           tags: |
-            ${{ steps.ecr-login.outputs.registry }}/sportslivetracker-${{ github.event.inputs.environment || 'dev' }}-api:latest
-            ${{ steps.ecr-login.outputs.registry }}/sportslivetracker-${{ github.event.inputs.environment || 'dev' }}-api:${{ env.IMAGE_TAG }}
+            ${{ steps.ecr-login.outputs.registry }}/sports-tracker-${{ github.event.inputs.environment || 'dev' }}-api:latest
+            ${{ steps.ecr-login.outputs.registry }}/sports-tracker-${{ github.event.inputs.environment || 'dev' }}-api:${{ env.IMAGE_TAG }}
 
       - name: Build and push frontend
         uses: docker/build-push-action@v6
@@ -85,8 +85,8 @@ jobs:
           push: true
           provenance: false
           tags: |
-            ${{ steps.ecr-login.outputs.registry }}/sportslivetracker-${{ github.event.inputs.environment || 'dev' }}-frontend:latest
-            ${{ steps.ecr-login.outputs.registry }}/sportslivetracker-${{ github.event.inputs.environment || 'dev' }}-frontend:${{ env.IMAGE_TAG }}
+            ${{ steps.ecr-login.outputs.registry }}/sports-tracker-${{ github.event.inputs.environment || 'dev' }}-frontend:latest
+            ${{ steps.ecr-login.outputs.registry }}/sports-tracker-${{ github.event.inputs.environment || 'dev' }}-frontend:${{ env.IMAGE_TAG }}
 
       - name: Build Lambda
         run: |
@@ -98,21 +98,21 @@ jobs:
           
           # Update Lambda function
           aws lambda update-function-code \
-            --function-name "sportslivetracker-${ENV}-processor" \
+            --function-name "sports-tracker-${ENV}-processor" \
             --zip-file fileb://lambda/target/lambda-0.0.1-SNAPSHOT.jar > /dev/null
 
           # Update ECS services
           aws ecs update-service \
-            --cluster "sportslivetracker-${ENV}-cluster" \
-            --service "sportslivetracker-${ENV}-producer" \
+            --cluster "sports-tracker-${ENV}-cluster" \
+            --service "sports-tracker-${ENV}-producer" \
             --force-new-deployment > /dev/null
             
           aws ecs update-service \
-            --cluster "sportslivetracker-${ENV}-cluster" \
-            --service "sportslivetracker-${ENV}-api" \
+            --cluster "sports-tracker-${ENV}-cluster" \
+            --service "sports-tracker-${ENV}-api" \
             --force-new-deployment > /dev/null
             
           aws ecs update-service \
-            --cluster "sportslivetracker-${ENV}-cluster" \
-            --service "sportslivetracker-${ENV}-frontend" \
+            --cluster "sports-tracker-${ENV}-cluster" \
+            --service "sports-tracker-${ENV}-frontend" \
             --force-new-deployment > /dev/null
