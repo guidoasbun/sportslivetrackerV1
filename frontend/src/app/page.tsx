@@ -1,67 +1,68 @@
-// frontend/src/app/page.tsx
-'use client'; // This tells Next.js this is an interactive client component
+import Link from 'next/link';
 
-import { useState } from 'react';
-import { useEventBuffer } from '@/lib/useEventBuffer';
-import OffsetSlider from '@/components/dashboard/OffsetSlider';
-import EventFeed from '@/components/dashboard/EventFeed';
-
-export default function Dashboard() {
-  // 1. The state that holds the user's TV delay slider value
-  const [offsetSeconds, setOffsetSeconds] = useState(0);
-
-  // 2. Connect to the stream and get the events that should be visible RIGHT NOW
-  const { visibleEvents, isConnected, totalBuffered } = useEventBuffer(offsetSeconds);
-
+export default function LandingPage() {
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-200 p-8 font-sans selection:bg-indigo-500/30">
-      <div className="max-w-4xl mx-auto">
+    <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-4">
+      
+      {/* Hero Section */}
+      <div className="max-w-3xl space-y-8">
+        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-cyan-400 to-emerald-400">
+          Live Sports, <br /> Synced to Your Screen.
+        </h1>
+        
+        <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
+          The ultimate real-time telemetry dashboard. With SportsLiveTracker, you can artificially delay our live data feed to match your TV broadcast down to the exact second. Say goodbye to spoilers.
+        </p>
 
-        {/* Header Area with a premium gradient title */}
-        <header className="mb-10 text-center">
-          <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400 mb-4 tracking-tight">
-            Sports Live Tracker
-          </h1>
-          <p className="text-slate-400 text-lg">
-            Real-time telemetry synced exactly to your TV broadcast.
-          </p>
-
-          {/* Status Indicator Badge */}
-          <div className="mt-4 inline-flex items-center gap-2 bg-slate-900/50 px-4 py-2 rounded-full border border-slate-800">
-            <span className="text-sm font-medium text-slate-400">Stream Status:</span>
-            <div className={`flex items-center gap-2 ${isConnected ? 'text-emerald-400' : 'text-rose-400'}`}>
-              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'}`} />
-              <span className="text-sm font-bold">{isConnected ? 'LIVE' : 'DISCONNECTED'}</span>
-            </div>
-            <span className="text-slate-600 mx-2">|</span>
-            <span className="text-sm text-slate-400">Events in Memory: {totalBuffered}</span>
-          </div>
-        </header>
-
-        {/* Dashboard Grid layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-          {/* Left Column: Controls (Our Slider) */}
-          <div className="lg:col-span-1 space-y-6">
-            <OffsetSlider
-              offsetSeconds={offsetSeconds}
-              onChange={setOffsetSeconds}
-            />
-          </div>
-
-          {/* Right Column: The Feed */}
-          <div className="lg:col-span-2">
-            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-              <svg className="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              Live Event Feed
-            </h2>
-            <EventFeed events={visibleEvents} />
-          </div>
-
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Link 
+            href="/signup"
+            className="px-8 py-4 bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-full transition-all shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-1 w-full sm:w-auto"
+          >
+            Get Started Free
+          </Link>
+          
+          <Link 
+            href="/login"
+            className="px-8 py-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold rounded-full transition-all w-full sm:w-auto"
+          >
+            Log In
+          </Link>
         </div>
       </div>
-    </main>
+
+      {/* Feature Preview */}
+      <div className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl w-full text-left">
+        <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+          <div className="w-12 h-12 bg-indigo-500/20 text-indigo-400 rounded-xl flex items-center justify-center mb-4">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-bold text-slate-200 mb-2">Time-Travel Sync</h3>
+          <p className="text-slate-400 text-sm">Slider-based offset controls ensure our data arrives at the exact moment you see the play happen on your screen.</p>
+        </div>
+
+        <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+          <div className="w-12 h-12 bg-cyan-500/20 text-cyan-400 rounded-xl flex items-center justify-center mb-4">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-bold text-slate-200 mb-2">Real-Time Streams</h3>
+          <p className="text-slate-400 text-sm">Powered by Server-Sent Events (SSE) from our blazing fast Java Spring Boot backend, bypassing typical REST bottlenecks.</p>
+        </div>
+
+        <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+          <div className="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-xl flex items-center justify-center mb-4">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-bold text-slate-200 mb-2">AI Color Commentary</h3>
+          <p className="text-slate-400 text-sm">Rich, dynamic summaries of events generated instantly by AWS Bedrock for every major play.</p>
+        </div>
+      </div>
+    </div>
   );
 }
