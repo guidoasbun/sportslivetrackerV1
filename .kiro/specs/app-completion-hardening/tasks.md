@@ -79,7 +79,7 @@ This plan implements the remaining 20% of GameShift Live — completing auth flo
     - On submit: call `/api/auth/email/reset-password`, redirect to `/login` with success message
     - _Requirements: 1.4, 1.6, 1.9, 4.5, 4.6_
 
-- [ ] 3. Checkpoint — Auth and utilities
+- [x] 3. Checkpoint — Auth and utilities
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 4. Frontend test framework and test files
