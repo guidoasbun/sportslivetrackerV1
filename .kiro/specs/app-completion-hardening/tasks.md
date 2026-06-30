@@ -41,38 +41,38 @@ This plan implements the remaining 20% of GameShift Live — completing auth flo
     - Ensure backward compatibility during the transition
     - _Requirements: 5.2_
 
-- [ ] 2. Auth flows — API routes and pages
-  - [ ] 2.1 Create `/api/auth/email/forgot-password/route.ts`
+- [x] 2. Auth flows — API routes and pages
+  - [x] 2.1 Create `/api/auth/email/forgot-password/route.ts`
     - POST handler: validate email present, call `forgotPassword()` from cognito lib
     - Catch `UserNotFoundException` / `LimitExceededException` → return generic success (don't reveal user existence)
     - Return 200 with success message on normal completion
     - _Requirements: 1.2, 1.7_
 
-  - [ ] 2.2 Create `/api/auth/email/reset-password/route.ts`
+  - [x] 2.2 Create `/api/auth/email/reset-password/route.ts`
     - POST handler: validate email, code, newPassword present, call `confirmForgotPassword()`
     - Catch `CodeMismatchException` → return 400 "Invalid or expired code"
     - Catch `ExpiredCodeException` → return 400 "Code has expired, request a new one"
     - _Requirements: 1.5, 1.8_
 
-  - [ ] 2.3 Create `/api/auth/email/resend-code/route.ts`
+  - [x] 2.3 Create `/api/auth/email/resend-code/route.ts`
     - POST handler: validate email present (return error if missing), call `resendConfirmationCode()`
     - Catch `CodeDeliveryFailureException` → return 500 "Could not send code"
     - Catch `LimitExceededException` / `UserNotFoundException` → return generic error
     - _Requirements: 2.1, 2.2, 2.4, 2.5_
 
-  - [ ] 2.4 Create `/api/auth/refresh/route.ts`
+  - [x] 2.4 Create `/api/auth/refresh/route.ts`
     - POST handler: read refresh token from session cookie, call `refreshToken()`
     - Update session cookie with new access token
     - Catch `NotAuthorizedException` → clear session, return 401
     - _Requirements: 5.1, 5.2, 5.3_
 
-  - [ ] 2.5 Create forgot-password page `frontend/src/app/(auth)/forgot-password/page.tsx`
+  - [x] 2.5 Create forgot-password page `frontend/src/app/(auth)/forgot-password/page.tsx`
     - Email input form with validation via `validateEmail()`
     - Display validation errors below input
     - On submit: call `/api/auth/email/forgot-password`, redirect to `/reset-password?email=...`
     - _Requirements: 1.1, 1.3, 4.5, 4.6_
 
-  - [ ] 2.6 Create reset-password page `frontend/src/app/(auth)/reset-password/page.tsx`
+  - [x] 2.6 Create reset-password page `frontend/src/app/(auth)/reset-password/page.tsx`
     - Guard: if no `email` query param, redirect to `/forgot-password`
     - Form with 6-digit code input + new password input with `validatePassword()`
     - Display validation errors below inputs

@@ -88,6 +88,9 @@ function LoginForm() {
                             background: 'rgba(255,255,255,0.05)', color: 'white', outline: 'none', fontSize: '16px'
                         }}
                     />
+                    <div style={{ marginTop: '8px', textAlign: 'right' }}>
+                        <a href="/forgot-password" style={{ color: '#00b4db', textDecoration: 'none', fontSize: '13px', opacity: 0.9 }}>Forgot password?</a>
+                    </div>
                 </div>
 
                 <button
