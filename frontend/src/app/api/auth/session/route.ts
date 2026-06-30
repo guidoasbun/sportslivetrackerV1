@@ -10,9 +10,13 @@ export async function GET() {
         return NextResponse.json({ authenticated: false }, { status: 401 });
     }
 
+    // Extract the access token from either SessionData object or plain string (backward compat)
+    const accessToken =
+        typeof session === "object" ? session.accessToken : session;
+
     try {
         // Validate the JWT by calling Cognito GetUser with the AccessToken
-        await getUser(session);
+        await getUser(accessToken);
         return NextResponse.json({ authenticated: true });
     } catch (error) {
         // Token is invalid, expired, or forged

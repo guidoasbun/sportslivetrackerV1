@@ -4,6 +4,9 @@ import {
     ConfirmSignUpCommand,
     InitiateAuthCommand,
     GetUserCommand,
+    ForgotPasswordCommand,
+    ConfirmForgotPasswordCommand,
+    ResendConfirmationCodeCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 
 // Initialize the Cognito client using the region from our environment
@@ -95,4 +98,54 @@ export async function getUser(accessToken: string) {
         AccessToken: accessToken,
     });
     return await client.send(command);
+}
+
+/**
+ * Initiates a forgot password flow — sends a verification code to the user's email
+ */
+export async function forgotPassword(email: string) {
+    const command = new ForgotPasswordCommand({
+        ClientId: CLIENT_ID,
+        Username: email,
+    });
+    return await client.send(command);
+}
+
+/**
+ * Confirms a password reset using the verification code and sets the new password
+ */
+export async function confirmForgotPassword(email: string, code: string, newPassword: string) {
+    const command = new ConfirmForgotPasswordCommand({
+        ClientId: CLIENT_ID,
+        Username: email,
+        ConfirmationCode: code,
+        Password: newPassword,
+    });
+    return await client.send(command);
+}
+
+/**
+ * Resends the sign-up confirmation code to the user's email
+ */
+export async function resendConfirmationCode(email: string) {
+    const command = new ResendConfirmationCodeCommand({
+        ClientId: CLIENT_ID,
+        Username: email,
+    });
+    return await client.send(command);
+}
+
+/**
+ * Refreshes the access token using a valid refresh token
+ */
+export async function refreshToken(refreshToken: string) {
+    const command = new InitiateAuthCommand({
+        ClientId: CLIENT_ID,
+        AuthFlow: "REFRESH_TOKEN_AUTH",
+        AuthParameters: {
+            REFRESH_TOKEN: refreshToken,
+        },
+    });
+    const response = await client.send(command);
+    return response.AuthenticationResult;
 }

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getSession } from './lib/sessions'; // Note the 's' matching your filename!
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
     // Get the session from our HttpOnly cookie
     const session = await getSession();
 
