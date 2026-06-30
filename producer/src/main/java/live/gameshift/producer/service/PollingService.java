@@ -27,7 +27,7 @@ public class PollingService {
         this.props = props;
     }
 
-    @Scheduled(fixedRateString = "${app.api.sports.poll-interval-ms}")
+    @Scheduled(fixedDelayString = "${app.api.sports.poll-interval-ms}")
     public void poll() {
         for (SportType sportType : props.getApi().getSports().getConfigs().keySet()) {
             try {

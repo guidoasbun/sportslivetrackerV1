@@ -31,23 +31,27 @@ public class EventRepository {
         this.sportTypeIndex = table.index("sport-type-timestamp-index");
     }
 
+    private static final int MAX_EVENTS_PER_QUERY = 100;
+
     public List<Event> findRecentEvents(SportType sportType, Long sinceEpochMillis) {
         // Query condition: "Partition key equals SportType AND Sort key >= sinceEpochMillis"
         QueryConditional queryConditional = QueryConditional.sortGreaterThanOrEqualTo(
                 Key.builder()
                         .partitionValue(sportType.name())
-                        .sortValue(sinceEpochMillis) 
+                        .sortValue(sinceEpochMillis)
                         .build()
         );
 
-        // Execute the query against the GSI and collect the results into a List
+        // Limit results to prevent memory spikes after outages
         return sportTypeIndex.query(
                         QueryEnhancedRequest.builder()
                                 .queryConditional(queryConditional)
+                                .limit(MAX_EVENTS_PER_QUERY)
                                 .build()
                 )
                 .stream()
                 .flatMap(page -> page.items().stream())
+                .limit(MAX_EVENTS_PER_QUERY)
                 .collect(Collectors.toList());
     }
 }

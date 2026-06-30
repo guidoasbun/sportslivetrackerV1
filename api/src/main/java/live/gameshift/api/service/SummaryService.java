@@ -20,6 +20,7 @@ public class SummaryService {
                 .map(summary -> new SummaryDto(
                         summary.getSummaryId(),
                         summary.getEventId(),
+                        summary.getSportType(),
                         summary.getCommentary(),
                         summary.getTimestamp()
                 ));

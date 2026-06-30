@@ -7,7 +7,6 @@ export interface SportEvent {
     action: string;
     participants: Record<string, string>;
     eventTimestamp: number;
-    rawPayload: string;
 }
 export type { SportType };
 

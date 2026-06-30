@@ -51,6 +51,11 @@ resource "aws_dynamodb_table" "summaries" {
     type = "S"
   }
 
+  ttl {
+    attribute_name = "ttl"
+    enabled        = true
+  }
+
   global_secondary_index {
     name            = "event-id-index"
     hash_key        = "eventId"

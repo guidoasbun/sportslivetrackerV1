@@ -7,15 +7,22 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.util.Map;
+import java.util.UUID;
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleAllExceptions(Exception ex) {
-        log.error("Unhandled exception caught by GlobalExceptionHandler", ex);
+    public ResponseEntity<Map<String, String>> handleAllExceptions(Exception ex) {
+        String correlationId = UUID.randomUUID().toString().substring(0, 8);
+        log.error("[{}] Unhandled exception: {}", correlationId, ex.getClass().getSimpleName(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("An internal error occurred. Please try again later.");
+                .body(Map.of(
+                        "error", "An internal error occurred. Please try again later.",
+                        "correlationId", correlationId
+                ));
     }
 }

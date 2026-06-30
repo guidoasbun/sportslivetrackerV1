@@ -3,7 +3,9 @@ package live.gameshift.lambda;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import live.gameshift.lambda.model.Event;
 import live.gameshift.lambda.model.SportEvent;
 import live.gameshift.lambda.model.Summary;
@@ -11,17 +13,21 @@ import live.gameshift.lambda.service.BedrockCommentaryService;
 import live.gameshift.lambda.service.DynamoDbService;
 
 import java.nio.charset.StandardCharsets;
+
 public class SportEventHandler implements RequestHandler<KinesisEvent, Void> {
 
     private final ObjectMapper objectMapper;
     private final DynamoDbService dynamoDbService;
     private final BedrockCommentaryService bedrockService;
 
+    /**
+     * Default constructor — called by AWS Lambda runtime exactly once per container.
+     */
     public SportEventHandler() {
-        // This constructor is called exactly once when AWS spins up the container
         this.objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        objectMapper.registerModule(new JavaTimeModule());
 
-        // Grab environment variables injected securely by Terraform
         String eventTableName = System.getenv("EVENTS_TABLE_NAME");
         String summaryTableName = System.getenv("SUMMARIES_TABLE_NAME");
 
@@ -29,21 +35,29 @@ public class SportEventHandler implements RequestHandler<KinesisEvent, Void> {
         this.bedrockService = new BedrockCommentaryService(objectMapper);
     }
 
+    /**
+     * Test-visible constructor for dependency injection (mocking DynamoDb and Bedrock).
+     */
+    public SportEventHandler(ObjectMapper objectMapper, DynamoDbService dynamoDbService, BedrockCommentaryService bedrockService) {
+        this.objectMapper = objectMapper;
+        this.dynamoDbService = dynamoDbService;
+        this.bedrockService = bedrockService;
+    }
+
     @Override
     public Void handleRequest(KinesisEvent kinesisEvent, Context context) {
 
-        // A single Kinesis event can contain an array of multiple records (batching)
         for (KinesisEvent.KinesisEventRecord record : kinesisEvent.getRecords()) {
             try {
-                // 1. Kinesis payloads are Base64 encoded. We must decode them into a JSON
-                // String.
+                // 1. Decode Kinesis payload from Base64
                 String payload = new String(record.getKinesis().getData().array(), StandardCharsets.UTF_8);
-                context.getLogger().log("Received Kinesis Payload: " + payload);
+                context.getLogger().log("Processing event from Kinesis (length=" + payload.length() + ")");
 
-                // 2. Deserialize JSON into our Java DTO
+                // 2. Deserialize JSON into SportEvent DTO
                 SportEvent sportEvent = objectMapper.readValue(payload, SportEvent.class);
+                context.getLogger().log("Deserialized event: id=" + sportEvent.getEventId() + " sport=" + sportEvent.getSportType());
 
-                // 3. Convert DTO to DynamoDB Entity and Save
+                // 3. Persist event to DynamoDB (always, even if Bedrock fails)
                 Event event = new Event();
                 event.setEventId(sportEvent.getEventId());
                 event.setSportType(sportEvent.getSportType());
@@ -51,27 +65,31 @@ public class SportEventHandler implements RequestHandler<KinesisEvent, Void> {
                 event.setParticipants(sportEvent.getParticipants());
                 event.setRawPayload(sportEvent.getRawPayload());
                 event.setEventTimestamp(sportEvent.getEventTimestamp());
+                // TTL: auto-delete after 7 days (DynamoDB TTL uses epoch seconds)
+                event.setTtl(System.currentTimeMillis() / 1000 + (7 * 24 * 60 * 60));
 
                 dynamoDbService.getEventRepository().save(event);
                 context.getLogger().log("Saved Event to DynamoDB: " + event.getEventId());
 
-                // 4. Ask Amazon Bedrock for AI Commentary
+                // 4. Generate AI commentary (fallback on failure)
                 String commentary = bedrockService.generateCommentary(sportEvent);
 
-                // 5. Save the AI Commentary to the Summaries table
+                // 5. Persist commentary to Summaries table
                 Summary summary = new Summary();
                 summary.setSummaryId(java.util.UUID.randomUUID().toString());
                 summary.setEventId(sportEvent.getEventId());
                 summary.setSportType(sportEvent.getSportType());
                 summary.setCommentary(commentary);
                 summary.setTimestamp(System.currentTimeMillis());
+                // TTL: auto-delete after 7 days
+                summary.setTtl(System.currentTimeMillis() / 1000 + (7 * 24 * 60 * 60));
 
                 dynamoDbService.getSummaryRepository().save(summary);
-                context.getLogger().log("Saved Summary to DynamoDB: " + summary.getEventId());
+                context.getLogger().log("Saved Summary for event: " + summary.getEventId());
 
             } catch (Exception e) {
-                // We log the error but let the loop continue processing other records
-                context.getLogger().log("ERROR processing record: " + e.getMessage());
+                // Log error and continue processing remaining records in the batch
+                context.getLogger().log("ERROR processing record: " + e.getClass().getSimpleName() + " - " + e.getMessage());
             }
         }
 
