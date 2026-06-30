@@ -33,10 +33,11 @@ export async function POST(request: Request) {
             error.name === "LimitExceededException" ||
             error.name === "UserNotFoundException"
         ) {
-            return NextResponse.json(
-                { error: "Unable to resend code" },
-                { status: 400 }
-            );
+            // Return generic success to prevent account enumeration
+            return NextResponse.json({
+                success: true,
+                message: "A new code has been sent",
+            });
         }
 
         return NextResponse.json(

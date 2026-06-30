@@ -6,10 +6,17 @@ export async function POST() {
     try {
         const session = await getSession();
 
-        // Session must be a SessionData object with a refresh token
-        if (!session || typeof session === "string") {
+        if (!session) {
             return NextResponse.json(
                 { error: "No session found" },
+                { status: 401 }
+            );
+        }
+
+        // Legacy sessions store only the access token as a plain string — no refresh token available
+        if (typeof session === "string") {
+            return NextResponse.json(
+                { error: "Missing refresh token in session — please sign in again" },
                 { status: 401 }
             );
         }

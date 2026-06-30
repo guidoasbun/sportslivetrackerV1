@@ -18,12 +18,15 @@ export async function POST(request: Request) {
         // 1. Call our Cognito wrapper to authenticate with AWS
         const authResult = await login(email, password);
 
-        if (!authResult || !authResult.AccessToken) {
+        if (!authResult || !authResult.AccessToken || !authResult.RefreshToken) {
             throw new Error("Login failed - no access token returned");
         }
 
-        // 2. Create the HTTP-only cookie session using the new token
-        await createSession(authResult.AccessToken);
+        // 2. Create the HTTP-only cookie session with both tokens for refresh support
+        await createSession({
+            accessToken: authResult.AccessToken,
+            refreshToken: authResult.RefreshToken,
+        });
 
         // 3. Return success to the client
         return NextResponse.json({ success: true });
