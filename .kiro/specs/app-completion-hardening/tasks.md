@@ -146,19 +146,19 @@ This plan implements the remaining 20% of GameShift Live — completing auth flo
 - [x] 6. Checkpoint — All test suites pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 7. Producer health and live API-Sports connection
-  - [ ] 7.1 Create `KinesisHealthIndicator` in producer
+- [x] 7. Producer health and live API-Sports connection
+  - [x] 7.1 Create `KinesisHealthIndicator` in producer
     - File: `producer/src/main/java/live/gameshift/producer/health/KinesisHealthIndicator.java`
     - Implement Spring Boot `HealthIndicator`: try `kinesisClient.describeStream()`, return DOWN on failure
     - Returns HTTP 503 with `{"status": "DOWN"}` when Kinesis unreachable
     - _Requirements: 8.1, 8.3_
 
-  - [ ] 7.2 Update Terraform ECS health check for producer
+  - [x] 7.2 Update Terraform ECS health check for producer
     - Fix port from 8080 → 8081 in the ECS health check configuration
     - Set interval 30s, timeout 5s, start period 60s, 3 retries
     - _Requirements: 8.2, 8.4_
 
-  - [ ] 7.3 Configure live API-Sports connection in producer
+  - [x] 7.3 Configure live API-Sports connection in producer
     - Set `app.api.sports.mock-mode=false` via Terraform ECS task environment variable
     - Add HTTP timeouts (10s connect + 10s read) to `ApiSportsClient` RestClient builder
     - Implement rate limiting: catch HTTP 429 → set per-sport `pausedUntil` for 60s

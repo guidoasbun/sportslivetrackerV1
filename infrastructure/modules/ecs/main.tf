@@ -117,9 +117,10 @@ resource "aws_ecs_task_definition" "producer" {
     essential = true
 
     environment = [
-      { name = "ENVIRONMENT",         value = var.environment },
+      { name = "ENVIRONMENT", value = var.environment },
       { name = "KINESIS_STREAM_NAME", value = var.kinesis_stream_name },
-      { name = "AWS_REGION",          value = data.aws_region.current.name },
+      { name = "AWS_REGION", value = data.aws_region.current.name },
+      { name = "APP_API_SPORTS_MOCK_MODE", value = "false" },
     ]
 
     secrets = [
@@ -127,7 +128,7 @@ resource "aws_ecs_task_definition" "producer" {
     ]
 
     healthCheck = {
-      command     = ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      command     = ["CMD-SHELL", "curl -f http://localhost:8081/actuator/health || exit 1"]
       interval    = 30
       timeout     = 5
       retries     = 3
@@ -206,7 +207,7 @@ resource "aws_ecs_task_definition" "frontend" {
 
     environment = [
       { name = "ENVIRONMENT", value = var.environment },
-      { name = "AWS_REGION",  value = data.aws_region.current.name },
+      { name = "AWS_REGION", value = data.aws_region.current.name },
     ]
 
     logConfiguration = {
@@ -287,9 +288,9 @@ resource "aws_ecs_task_definition" "api" {
     }]
 
     environment = [
-      { name = "ENVIRONMENT",          value = var.environment },
-      { name = "AWS_REGION",           value = data.aws_region.current.name },
-      { name = "EVENTS_TABLE_NAME",    value = var.events_table_name },
+      { name = "ENVIRONMENT", value = var.environment },
+      { name = "AWS_REGION", value = data.aws_region.current.name },
+      { name = "EVENTS_TABLE_NAME", value = var.events_table_name },
       { name = "SUMMARIES_TABLE_NAME", value = var.summaries_table_name },
     ]
 
