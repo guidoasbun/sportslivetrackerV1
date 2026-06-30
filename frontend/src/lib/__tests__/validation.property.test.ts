@@ -55,13 +55,13 @@ function validPassword(): fc.Arbitrary<string> {
       charMatching(/^[a-z]$/), // at least one lowercase
       charMatching(/^[0-9]$/), // at least one digit
       fc.constantFrom(...SPECIAL_CHARS), // at least one special char
-      // Fill remaining with any valid characters (4–60 more chars for length 8–256)
+      // Fill remaining with valid characters (total password: 4 required + 4–252 filler = 8–256 chars)
       fc.array(
         fc.oneof(
           charMatching(/^[a-zA-Z0-9]$/),
           fc.constantFrom(...SPECIAL_CHARS)
         ),
-        { minLength: 4, maxLength: 60 }
+        { minLength: 4, maxLength: 252 }
       )
     )
     .map(([upper, lower, digit, special, rest]) => {
