@@ -79,24 +79,24 @@ This plan implements the remaining 20% of GameShift Live — completing auth flo
     - On submit: call `/api/auth/email/reset-password`, redirect to `/login` with success message
     - _Requirements: 1.4, 1.6, 1.9, 4.5, 4.6_
 
-- [ ] 3. Checkpoint — Auth and utilities
+- [x] 3. Checkpoint — Auth and utilities
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 4. Frontend test framework and test files
-  - [ ] 4.1 Set up Vitest + React Testing Library in frontend
+- [x] 4. Frontend test framework and test files
+  - [x] 4.1 Set up Vitest + React Testing Library in frontend
     - Add `vitest`, `@testing-library/react`, `@testing-library/jest-dom`, `jsdom` as devDependencies
     - Create `frontend/vitest.config.ts` with jsdom environment and `@/` → `./src/` path alias
     - Add `"test": "vitest --run"` script to package.json
     - _Requirements: 7.1, 7.5_
 
-  - [ ]* 4.2 Write tests for validation utility `frontend/src/lib/__tests__/validation.test.ts`
+  - [x] 4.2 Write tests for validation utility `frontend/src/lib/__tests__/validation.test.ts`
     - Test valid email formats accepted
     - Test invalid emails rejected (missing "@", missing domain, local >64 chars)
     - Test passwords <8 chars rejected
     - Test valid passwords accepted (8+ chars with all required character types)
     - _Requirements: 7.3_
 
-  - [ ]* 4.3 Write property tests for validation `frontend/src/lib/__tests__/validation.property.test.ts`
+  - [x] 4.3 Write property tests for validation `frontend/src/lib/__tests__/validation.property.test.ts`
     - Install `fast-check` as devDependency
     - **Property 1: Email validation correctness** — generate valid/invalid emails, verify accept/reject
     - **Validates: Requirements 4.1**
@@ -105,17 +105,17 @@ This plan implements the remaining 20% of GameShift Live — completing auth flo
     - **Property 3: Validation reports all failures simultaneously** — generate inputs with N rule violations, verify N errors returned
     - **Validates: Requirements 4.4**
 
-  - [ ]* 4.4 Write tests for useEventBuffer hook `frontend/src/lib/__tests__/useEventBuffer.test.ts`
+  - [x] 4.4 Write tests for useEventBuffer hook `frontend/src/lib/__tests__/useEventBuffer.test.ts`
     - Test events older than offsetSeconds are included in visibleEvents
     - Test events newer than threshold are excluded
     - Test buffer does not exceed 500 stored events
     - _Requirements: 7.2_
 
-  - [ ]* 4.5 Write property test for event buffer `frontend/src/lib/__tests__/useEventBuffer.property.test.ts`
+  - [x] 4.5 Write property test for event buffer `frontend/src/lib/__tests__/useEventBuffer.property.test.ts`
     - **Property 4: Event buffer time-travel filtering** — generate event lists + offsets, verify only events older than offset are visible
     - **Validates: Requirements 7.2**
 
-  - [ ]* 4.6 Write tests for auth form components `frontend/src/app/(auth)/__tests__/login.test.tsx`
+  - [x] 4.6 Write tests for auth form components `frontend/src/app/(auth)/__tests__/login.test.tsx`
     - Test login form calls `/api/auth/email/signin` with entered email and password
     - Test error message rendered when API response is not ok
     - Test submit button disabled while submission in progress
