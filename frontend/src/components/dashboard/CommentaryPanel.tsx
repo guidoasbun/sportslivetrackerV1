@@ -7,38 +7,52 @@ interface CommentaryPanelProps {
     eventId: string;
 }
 
+const MAX_POLL_ATTEMPTS = 20; // Stop after ~50 seconds (20 * 2.5s)
+
 export default function CommentaryPanel({ eventId }: CommentaryPanelProps) {
     const [summary, setSummary] = useState<SportSummary | null>(null);
     const [isGenerating, setIsGenerating] = useState(true);
+    const [gaveUp, setGaveUp] = useState(false);
 
     useEffect(() => {
         let interval: NodeJS.Timeout | undefined;
+        let attempts = 0;
 
-        // We create a function to ask the backend for the AI summary
         const checkSummary = async () => {
+            attempts++;
             const data = await fetchEventSummary(eventId);
             if (data) {
                 setSummary(data);
                 setIsGenerating(false);
-                // Once we have the data, we stop asking!
+                if (interval) clearInterval(interval);
+            } else if (attempts >= MAX_POLL_ATTEMPTS) {
+                setIsGenerating(false);
+                setGaveUp(true);
                 if (interval) clearInterval(interval);
             }
         };
 
-        // Try immediately
-        checkSummary();
+        // Reset state when eventId changes
+        setSummary(null);
+        setIsGenerating(true);
+        setGaveUp(false);
 
-        // If we didn't get it on the first try, set up a loop to ask every 2.5 seconds
+        checkSummary();
         interval = setInterval(checkSummary, 2500);
 
-        // Cleanup the interval if the user leaves the page before the AI finishes
         return () => {
             if (interval) clearInterval(interval);
         };
     }, [eventId]);
 
+    if (gaveUp) {
+        return (
+            <div className="mt-4 p-3 bg-slate-900/50 rounded-lg border border-slate-700/30">
+                <span className="text-xs text-slate-500 italic">Commentary unavailable for this event.</span>
+            </div>
+        );
+    }
 
-    // While waiting for Bedrock, show a nice loading state
     if (isGenerating) {
         return (
             <div className="mt-4 p-3 bg-slate-900/50 rounded-lg border border-slate-700/30 flex items-center gap-3">
@@ -48,7 +62,6 @@ export default function CommentaryPanel({ eventId }: CommentaryPanelProps) {
         );
     }
 
-    // Once the AI finishes, display the text!
     return (
         <div className="mt-4 p-4 bg-indigo-900/20 rounded-lg border border-indigo-500/30">
             <div className="flex items-center gap-2 mb-2">

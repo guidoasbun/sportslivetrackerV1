@@ -12,6 +12,7 @@ public class Summary {
     private SportType sportType;
     private String commentary;
     private Long timestamp;
+    private Long ttl;
 
     public Summary() {
     }
@@ -55,5 +56,13 @@ public class Summary {
 
     public void setTimestamp(Long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public Long getTtl() {
+        return ttl;
+    }
+
+    public void setTtl(Long ttl) {
+        this.ttl = ttl;
     }
 }

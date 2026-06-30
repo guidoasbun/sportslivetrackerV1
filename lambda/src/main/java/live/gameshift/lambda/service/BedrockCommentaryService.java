@@ -11,54 +11,72 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class BedrockCommentaryService {
 
+    private static final int MAX_RETRIES = 1;
+    private static final long RETRY_DELAY_MS = 500;
+
     private final BedrockRuntimeClient bedrockClient;
     private final ObjectMapper objectMapper;
-    // We use the model ID passed in securely via Terraform environment variables
-    private final String modelId = System.getenv("BEDROCK_MODEL_ID");
+    private final String modelId;
 
     public BedrockCommentaryService(ObjectMapper objectMapper) {
-        // Initializes Bedrock client and automatically uses Lambda's IAM permissions
         this.bedrockClient = BedrockRuntimeClient.builder().build();
         this.objectMapper = objectMapper;
+        this.modelId = System.getenv("BEDROCK_MODEL_ID");
+    }
+
+    /**
+     * Test-visible constructor for injecting a mock Bedrock client.
+     */
+    public BedrockCommentaryService(ObjectMapper objectMapper, BedrockRuntimeClient bedrockClient, String modelId) {
+        this.objectMapper = objectMapper;
+        this.bedrockClient = bedrockClient;
+        this.modelId = modelId;
     }
 
     public String generateCommentary(SportEvent event) {
         String prompt = buildPrompt(event);
+        Exception lastException = null;
 
-        try {
-            // Build the JSON payload required by Anthropic's Messages API
-            ObjectNode payload = objectMapper.createObjectNode();
-            payload.put("anthropic_version", "bedrock-2023-05-31");
-            payload.put("max_tokens", 150);
+        for (int attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                if (attempt > 0) {
+                    Thread.sleep(RETRY_DELAY_MS);
+                }
 
-            ObjectNode message = payload.putArray("messages").addObject();
-            message.put("role", "user");
-            message.putArray("content").addObject().put("type", "text").put("text", prompt);
+                ObjectNode payload = objectMapper.createObjectNode();
+                payload.put("anthropic_version", "bedrock-2023-05-31");
+                payload.put("max_tokens", 150);
 
-            InvokeModelRequest request = InvokeModelRequest.builder()
-                    .modelId(modelId)
-                    .contentType("application/json")
-                    .accept("application/json")
-                    .body(SdkBytes.fromUtf8String(payload.toString()))
-                    .build();
+                ObjectNode message = payload.putArray("messages").addObject();
+                message.put("role", "user");
+                message.putArray("content").addObject().put("type", "text").put("text", prompt);
 
-            // Make the actual HTTP call to AWS Bedrock
-            InvokeModelResponse response = bedrockClient.invokeModel(request);
+                InvokeModelRequest request = InvokeModelRequest.builder()
+                        .modelId(modelId)
+                        .contentType("application/json")
+                        .accept("application/json")
+                        .body(SdkBytes.fromUtf8String(payload.toString()))
+                        .build();
 
-            // Parse the response from Bedrock to grab just the text
-            String responseBody = response.body().asUtf8String();
-            return objectMapper.readTree(responseBody)
-                    .get("content").get(0).get("text").asText();
+                InvokeModelResponse response = bedrockClient.invokeModel(request);
 
-        } catch (Exception e) {
-            System.err.println("Failed to generate commentary: " + e.getMessage());
-            // Fallback string if Bedrock is down or rate-limited
-            return "Exciting " + event.getSportType().name().toLowerCase() + " action just happened!";
+                String responseBody = response.body().asUtf8String();
+                return objectMapper.readTree(responseBody)
+                        .get("content").get(0).get("text").asText();
+
+            } catch (Exception e) {
+                lastException = e;
+            }
         }
+
+        // All retries exhausted — return fallback commentary
+        System.err.println("[BEDROCK_FAILURE] eventId=" + event.getEventId()
+                + " sport=" + event.getSportType()
+                + " error=" + (lastException != null ? lastException.getMessage() : "unknown"));
+        return "[FALLBACK] Exciting " + event.getSportType().name().toLowerCase() + " action just happened!";
     }
 
-    private String buildPrompt(SportEvent event) {
-        // Switch expressions (Java 14+) map each sport to a unique AI personality
+    String buildPrompt(SportEvent event) {
         String sportContext = switch (event.getSportType()) {
             case SOCCER ->
                 "You are a passionate English soccer commentator. Describe this event with extreme excitement.";

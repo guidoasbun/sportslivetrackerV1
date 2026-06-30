@@ -25,8 +25,9 @@ public class SseEmitterService {
         this.emitters.add(emitter);
 
         try {
-            // Send a welcome message so you can see it in Postman immediately!
-            emitter.send(SseEmitter.event().name("message").data("Welcome to SportsLiveTracker API! Your SSE connection is successful."));
+            // Send a connection confirmation using a distinct event name so it doesn't
+            // interfere with the "message" events that carry actual data
+            emitter.send(SseEmitter.event().name("connected").data("{\"status\":\"connected\"}"));
             log.info("New SSE connection created successfully");
         } catch (IOException e) {
             log.error("Error creating new SSE connection", e);

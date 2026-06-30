@@ -22,8 +22,8 @@ public class EventService {
     private final EventRepository eventRepository;
     private final SseEmitterService sseEmitterService;
     
-    private Long lastPollTime;
-    private Set<String> processedIdsAtLastPollTime = new HashSet<>();
+    private volatile Long lastPollTime;
+    private volatile Set<String> processedIdsAtLastPollTime = new HashSet<>();
 
     public EventService(EventRepository eventRepository, SseEmitterService sseEmitterService) {
         this.eventRepository = eventRepository;
@@ -32,9 +32,10 @@ public class EventService {
         this.lastPollTime = Instant.now().toEpochMilli();
     }
 
-    // Tells Spring to run this method automatically every 5,000 milliseconds
-    @Scheduled(fixedRate = 5000)
-    public void pollForNewEvents() {
+    // fixedDelay ensures 5s between the END of one poll and the START of the next,
+    // preventing overlap if DynamoDB queries are slow
+    @Scheduled(fixedDelay = 5000)
+    public synchronized void pollForNewEvents() {
         Long newMaxTime = lastPollTime;
         Set<String> newMaxIds = new HashSet<>();
         

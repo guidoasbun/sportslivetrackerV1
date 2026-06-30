@@ -15,6 +15,7 @@ public class Event {
     private Map<String, String> participants;
     private String rawPayload;
     private Long eventTimestamp;
+    private Long ttl;
 
     public Event() {
     }
@@ -66,5 +67,13 @@ public class Event {
 
     public void setEventTimestamp(Long eventTimestamp) {
         this.eventTimestamp = eventTimestamp;
+    }
+
+    public Long getTtl() {
+        return ttl;
+    }
+
+    public void setTtl(Long ttl) {
+        this.ttl = ttl;
     }
 }
