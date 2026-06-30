@@ -20,8 +20,14 @@ function getPasswordInput() {
 }
 
 describe("LoginPage", () => {
+  const originalFetch = global.fetch;
+
   beforeEach(() => {
     vi.resetAllMocks();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
   });
 
   it("calls /api/auth/email/signin with entered email and password on submit", async () => {

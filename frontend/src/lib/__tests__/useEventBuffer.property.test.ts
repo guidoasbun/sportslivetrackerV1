@@ -26,11 +26,9 @@ class MockEventSource {
   constructor(url: string) {
     this.url = url;
     MockEventSource.instances.push(this);
-    // Simulate async connection open
-    setTimeout(() => {
-      this.readyState = 1;
-      this.onopen?.();
-    }, 0);
+    // Open connection synchronously — these tests don't assert async connection behavior
+    this.readyState = 1;
+    this.onopen?.();
   }
 
   close() {

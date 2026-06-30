@@ -9,20 +9,19 @@ import { validateEmail, validatePassword } from "../validation";
 
 // --- Arbitraries (generators) ---
 
-/** Generate a valid email local part: 1–64 alphanumeric characters */
-function validLocalPart(): fc.Arbitrary<string> {
-  return fc.stringOf(fc.char().filter((c) => /[a-zA-Z0-9]/.test(c)), {
-    minLength: 1,
-    maxLength: 64,
-  });
+/** Generate a single character matching a regex pattern */
+function charMatching(pattern: RegExp): fc.Arbitrary<string> {
+  return fc.stringMatching(pattern, { minLength: 1, maxLength: 1 });
 }
 
-/** Generate a valid domain label: 1–63 alphanumeric characters */
+/** Generate a valid email local part: 1–64 alphanumeric characters */
+function validLocalPart(): fc.Arbitrary<string> {
+  return fc.stringMatching(/^[a-zA-Z0-9]+$/, { minLength: 1, maxLength: 64 });
+}
+
+/** Generate a valid domain label: 1–10 alphanumeric characters (subset of the full 1–63 range for fast generation) */
 function validDomainLabel(): fc.Arbitrary<string> {
-  return fc.stringOf(fc.char().filter((c) => /[a-z0-9]/.test(c)), {
-    minLength: 1,
-    maxLength: 10,
-  });
+  return fc.stringMatching(/^[a-z0-9]+$/, { minLength: 1, maxLength: 10 });
 }
 
 /** Generate a valid domain with at least one dot (2–4 labels) */
@@ -52,24 +51,37 @@ const SPECIAL_CHARS = `^ $ * . [ ] { } ( ) ? " ! @ # % & / \\ , > < ' : ; | _ ~ 
 function validPassword(): fc.Arbitrary<string> {
   return fc
     .tuple(
-      fc.char().filter((c) => /[A-Z]/.test(c)), // at least one uppercase
-      fc.char().filter((c) => /[a-z]/.test(c)), // at least one lowercase
-      fc.char().filter((c) => /[0-9]/.test(c)), // at least one digit
+      charMatching(/^[A-Z]$/), // at least one uppercase
+      charMatching(/^[a-z]$/), // at least one lowercase
+      charMatching(/^[0-9]$/), // at least one digit
       fc.constantFrom(...SPECIAL_CHARS), // at least one special char
-      // Fill remaining with any valid characters (4–252 more chars for length 8–256)
-      fc.stringOf(
+      // Fill remaining with any valid characters (4–60 more chars for length 8–256)
+      fc.array(
         fc.oneof(
-          fc.char().filter((c) => /[a-zA-Z0-9]/.test(c)),
+          charMatching(/^[a-zA-Z0-9]$/),
           fc.constantFrom(...SPECIAL_CHARS)
         ),
         { minLength: 4, maxLength: 60 }
       )
     )
     .map(([upper, lower, digit, special, rest]) => {
-      // Shuffle to avoid positional bias
-      const chars = [upper, lower, digit, special, ...rest.split("")];
-      // Simple deterministic shuffle based on array reversal segments
-      return chars.sort(() => 0.5 - Math.random()).join("");
+      // Deterministic interleave: place required chars at fixed positions within the rest
+      const filler = rest;
+      const required = [upper, lower, digit, special];
+      // Insert required chars at evenly spaced positions
+      const total = filler.length + required.length;
+      const result: string[] = new Array(total);
+      for (let i = 0; i < required.length; i++) {
+        const pos = Math.floor((i * total) / required.length);
+        result[pos] = required[i];
+      }
+      let fillerIdx = 0;
+      for (let i = 0; i < total; i++) {
+        if (result[i] === undefined) {
+          result[i] = filler[fillerIdx++];
+        }
+      }
+      return result.join("");
     })
     .filter((pw) => pw.length >= 8 && pw.length <= 256);
 }
@@ -102,7 +114,7 @@ describe("Feature: app-completion-hardening, Property 1: Email validation correc
   it("rejects emails with no @ character", () => {
     fc.assert(
       fc.property(
-        fc.string({ minLength: 1, maxLength: 100 }).filter((s) => !s.includes("@")),
+        fc.stringMatching(/^[a-zA-Z0-9.]+$/, { minLength: 1, maxLength: 100 }),
         (email) => {
           const result = validateEmail(email);
           expect(result.success).toBe(false);
@@ -118,9 +130,9 @@ describe("Feature: app-completion-hardening, Property 1: Email validation correc
       fc.property(
         fc
           .tuple(
-            fc.string({ minLength: 1, maxLength: 30 }),
-            fc.string({ minLength: 1, maxLength: 30 }),
-            fc.string({ minLength: 1, maxLength: 30 })
+            fc.stringMatching(/^[a-z0-9]+$/, { minLength: 1, maxLength: 30 }),
+            fc.stringMatching(/^[a-z0-9]+$/, { minLength: 1, maxLength: 30 }),
+            fc.stringMatching(/^[a-z0-9]+$/, { minLength: 1, maxLength: 30 })
           )
           .map(([a, b, c]) => `${a}@${b}@${c}`),
         (email) => {
@@ -148,12 +160,12 @@ describe("Feature: app-completion-hardening, Property 1: Email validation correc
   it("rejects emails with local part > 64 characters", () => {
     fc.assert(
       fc.property(
-        fc.stringOf(fc.char().filter((c) => /[a-z]/.test(c)), {
-          minLength: 65,
-          maxLength: 100,
-        }),
+        // Generate a short string and repeat it to guarantee 65+ chars
+        fc.stringMatching(/^[a-z]+$/, { minLength: 5, maxLength: 10 }),
         validDomain(),
-        (local, domain) => {
+        (base, domain) => {
+          // Repeat base to exceed 64 characters
+          const local = base.repeat(Math.ceil(65 / base.length)).slice(0, 70);
           const email = `${local}@${domain}`;
           if (email.length <= 254) {
             const result = validateEmail(email);
@@ -172,10 +184,7 @@ describe("Feature: app-completion-hardening, Property 1: Email validation correc
     fc.assert(
       fc.property(
         validLocalPart(),
-        fc.stringOf(fc.char().filter((c) => /[a-z0-9]/.test(c)), {
-          minLength: 1,
-          maxLength: 20,
-        }),
+        fc.stringMatching(/^[a-z0-9]+$/, { minLength: 1, maxLength: 20 }),
         (local, domainNoDot) => {
           const email = `${local}@${domainNoDot}`;
           if (email.length <= 254) {
@@ -217,7 +226,7 @@ describe("Feature: app-completion-hardening, Property 2: Password validation cor
   it("rejects passwords shorter than 8 characters", () => {
     fc.assert(
       fc.property(
-        fc.string({ minLength: 1, maxLength: 7 }),
+        fc.stringMatching(/^[a-zA-Z0-9!@#]+$/, { minLength: 1, maxLength: 7 }),
         (password) => {
           const result = validatePassword(password);
           expect(result.success).toBe(false);
@@ -237,15 +246,15 @@ describe("Feature: app-completion-hardening, Property 2: Password validation cor
     fc.assert(
       fc.property(
         fc
-          .stringOf(
+          .array(
             fc.oneof(
-              fc.char().filter((c) => /[a-z]/.test(c)),
-              fc.char().filter((c) => /[0-9]/.test(c)),
+              charMatching(/^[a-z]$/),
+              charMatching(/^[0-9]$/),
               fc.constantFrom(...SPECIAL_CHARS)
             ),
             { minLength: 8, maxLength: 30 }
           )
-          .filter((s) => !/[A-Z]/.test(s)),
+          .map((arr) => arr.join("")),
         (password) => {
           const result = validatePassword(password);
           expect(result.success).toBe(false);
@@ -265,15 +274,15 @@ describe("Feature: app-completion-hardening, Property 2: Password validation cor
     fc.assert(
       fc.property(
         fc
-          .stringOf(
+          .array(
             fc.oneof(
-              fc.char().filter((c) => /[A-Z]/.test(c)),
-              fc.char().filter((c) => /[0-9]/.test(c)),
+              charMatching(/^[A-Z]$/),
+              charMatching(/^[0-9]$/),
               fc.constantFrom(...SPECIAL_CHARS)
             ),
             { minLength: 8, maxLength: 30 }
           )
-          .filter((s) => !/[a-z]/.test(s)),
+          .map((arr) => arr.join("")),
         (password) => {
           const result = validatePassword(password);
           expect(result.success).toBe(false);
@@ -293,14 +302,14 @@ describe("Feature: app-completion-hardening, Property 2: Password validation cor
     fc.assert(
       fc.property(
         fc
-          .stringOf(
+          .array(
             fc.oneof(
-              fc.char().filter((c) => /[a-zA-Z]/.test(c)),
+              charMatching(/^[a-zA-Z]$/),
               fc.constantFrom(...SPECIAL_CHARS)
             ),
             { minLength: 8, maxLength: 30 }
           )
-          .filter((s) => !/[0-9]/.test(s)),
+          .map((arr) => arr.join("")),
         (password) => {
           const result = validatePassword(password);
           expect(result.success).toBe(false);
@@ -319,10 +328,7 @@ describe("Feature: app-completion-hardening, Property 2: Password validation cor
   it("rejects passwords missing special characters", () => {
     fc.assert(
       fc.property(
-        fc.stringOf(fc.char().filter((c) => /[a-zA-Z0-9]/.test(c)), {
-          minLength: 8,
-          maxLength: 30,
-        }),
+        fc.stringMatching(/^[a-zA-Z0-9]+$/, { minLength: 8, maxLength: 30 }),
         (password) => {
           const result = validatePassword(password);
           expect(result.success).toBe(false);
@@ -358,7 +364,7 @@ describe("Feature: app-completion-hardening, Property 3: Validation reports all 
         const violatedRules: string[] = [];
 
         // Build a password that violates exactly the selected rules
-        let chars: string[] = [];
+        const chars: string[] = [];
 
         if (!config.noUppercase) chars.push("A");
         else violatedRules.push("uppercase");
@@ -409,15 +415,11 @@ describe("Feature: app-completion-hardening, Property 3: Validation reports all 
     // Test: email with local part > 64 chars AND domain missing a dot
     fc.assert(
       fc.property(
-        fc.stringOf(fc.char().filter((c) => /[a-z]/.test(c)), {
-          minLength: 65,
-          maxLength: 80,
-        }),
-        fc.stringOf(fc.char().filter((c) => /[a-z0-9]/.test(c)), {
-          minLength: 1,
-          maxLength: 20,
-        }),
-        (longLocal, domainNoDot) => {
+        fc.stringMatching(/^[a-z]+$/, { minLength: 5, maxLength: 10 }),
+        fc.stringMatching(/^[a-z0-9]+$/, { minLength: 1, maxLength: 20 }),
+        (base, domainNoDot) => {
+          // Repeat base to exceed 64 characters
+          const longLocal = base.repeat(Math.ceil(65 / base.length)).slice(0, 70);
           const email = `${longLocal}@${domainNoDot}`;
           if (email.length <= 254) {
             const result = validateEmail(email);

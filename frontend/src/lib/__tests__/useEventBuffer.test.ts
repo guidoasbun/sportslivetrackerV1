@@ -21,8 +21,6 @@ class MockEventSource {
     }
 }
 
-vi.stubGlobal('EventSource', MockEventSource);
-
 function createEvent(overrides: Partial<SportEvent> = {}): SportEvent {
     return {
         eventId: crypto.randomUUID(),
@@ -36,6 +34,11 @@ function createEvent(overrides: Partial<SportEvent> = {}): SportEvent {
 
 describe('useEventBuffer', () => {
     beforeEach(() => {
+        vi.stubGlobal('EventSource', MockEventSource);
+    });
+
+    afterEach(() => {
+        vi.unstubAllGlobals();
         vi.restoreAllMocks();
     });
 
