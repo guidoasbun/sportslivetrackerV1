@@ -143,7 +143,7 @@ This plan implements the remaining 20% of GameShift Live — completing auth flo
     - **Property 6: Lambda batch independence** — generate batches with N records (K malformed at arbitrary positions), verify exactly (N-K) events persisted
     - **Validates: Requirements 6.7, 6.8**
 
-- [ ] 6. Checkpoint — All test suites pass
+- [x] 6. Checkpoint — All test suites pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 7. Producer health and live API-Sports connection
