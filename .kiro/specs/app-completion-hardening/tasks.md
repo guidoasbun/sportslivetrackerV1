@@ -6,28 +6,28 @@ This plan implements the remaining 20% of GameShift Live — completing auth flo
 
 ## Tasks
 
-- [ ] 1. Frontend utilities and middleware foundation
-  - [ ] 1.1 Create validation utility `frontend/src/lib/validation.ts`
+- [x] 1. Frontend utilities and middleware foundation
+  - [x] 1.1 Create validation utility `frontend/src/lib/validation.ts`
     - Implement `validateEmail()` with rules: exactly one "@", local part 1–64 chars, domain with at least one "." and labels 1–63 chars, total ≤254
     - Implement `validatePassword()` with rules: 8–256 chars, at least one uppercase, lowercase, digit, and special character
     - Return `ValidationResult` with `success` boolean and `errors` array of `{field, rule, message}`
     - Report all failing rules simultaneously (not just the first)
     - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-  - [ ] 1.2 Rename `frontend/src/proxy.ts` → `frontend/src/middleware.ts` and activate middleware
+  - [x] 1.2 Rename `frontend/src/proxy.ts` → `frontend/src/middleware.ts` and activate middleware
     - Rename the file
     - Rename the exported function from `proxy` to `middleware`
     - Keep the existing matcher config and redirect logic unchanged
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
 
-  - [ ] 1.3 Add Cognito library extensions to `frontend/src/lib/cognito.ts`
+  - [x] 1.3 Add Cognito library extensions to `frontend/src/lib/cognito.ts`
     - Add `forgotPassword(email)` — invokes `ForgotPasswordCommand`
     - Add `confirmForgotPassword(email, code, newPassword)` — invokes `ConfirmForgotPasswordCommand`
     - Add `resendConfirmationCode(email)` — invokes `ResendConfirmationCodeCommand`
     - Add `refreshToken(refreshToken)` — invokes `InitiateAuthCommand` with `REFRESH_TOKEN_AUTH` flow
     - _Requirements: 1.2, 1.5, 2.1, 5.1_
 
-  - [ ] 1.4 Create token manager `frontend/src/lib/tokenManager.ts`
+  - [x] 1.4 Create token manager `frontend/src/lib/tokenManager.ts`
     - Implement `createAuthFetch()` wrapping native fetch
     - On 401 response: queue requests, call `/api/auth/refresh`, retry with new token
     - Proactive refresh: decode JWT `exp`, if <5 min remaining trigger background refresh
@@ -35,7 +35,7 @@ This plan implements the remaining 20% of GameShift Live — completing auth flo
     - On refresh failure: retry once after 2s, then clear session and redirect to `/login`
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-  - [ ] 1.5 Update `frontend/src/lib/sessions.ts` for token refresh support
+  - [x] 1.5 Update `frontend/src/lib/sessions.ts` for token refresh support
     - Change `createSession` to accept `{ accessToken, refreshToken }` JSON-encoded object
     - Update `getSession` to return parsed session data with both tokens
     - Ensure backward compatibility during the transition
