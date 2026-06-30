@@ -208,7 +208,9 @@ resource "aws_iam_role_policy" "frontend_dynamodb" {
       ]
       Resource = [
         var.events_table_arn,
+        "${var.events_table_arn}/index/*",
         var.summaries_table_arn,
+        "${var.summaries_table_arn}/index/*",
       ]
     }]
   })
