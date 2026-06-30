@@ -121,14 +121,14 @@ This plan implements the remaining 20% of GameShift Live — completing auth flo
     - Test submit button disabled while submission in progress
     - _Requirements: 7.4_
 
-- [ ] 5. Lambda processor tests
-  - [ ] 5.1 Add JUnit 5 + Mockito dependencies to `lambda/pom.xml`
+- [x] 5. Lambda processor tests
+  - [x] 5.1 Add JUnit 5 + Mockito dependencies to `lambda/pom.xml`
     - Add `junit-jupiter` (5.10+), `mockito-core`, `mockito-junit-jupiter` as test-scope dependencies
     - Add `maven-surefire-plugin` configured for JUnit 5
     - Add test-visible constructor to `SportEventHandler` for dependency injection
     - _Requirements: 6.6_
 
-  - [ ]* 5.2 Write Lambda handler unit tests `lambda/src/test/java/live/gameshift/lambda/SportEventHandlerTest.java`
+  - [x] 5.2 Write Lambda handler unit tests `lambda/src/test/java/live/gameshift/lambda/SportEventHandlerTest.java`
     - Test valid payload deserialization with all SportEvent fields
     - Test Event persisted to DynamoDB with correct field mapping
     - Test Summary persisted with Bedrock-generated commentary
@@ -139,11 +139,11 @@ This plan implements the remaining 20% of GameShift Live — completing auth flo
     - Target ≥80% line coverage on handler, services, repositories
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8_
 
-  - [ ]* 5.3 Write property test for Lambda batch independence
+  - [x] 5.3 Write property test for Lambda batch independence
     - **Property 6: Lambda batch independence** — generate batches with N records (K malformed at arbitrary positions), verify exactly (N-K) events persisted
     - **Validates: Requirements 6.7, 6.8**
 
-- [ ] 6. Checkpoint — All test suites pass
+- [x] 6. Checkpoint — All test suites pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 7. Producer health and live API-Sports connection
