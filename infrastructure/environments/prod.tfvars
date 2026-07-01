@@ -5,7 +5,7 @@ api_sports_key_arn               = "REPLACE_WITH_PROD_ARN"
 cognito_google_client_id_arn     = "REPLACE_WITH_PROD_ARN"
 cognito_google_client_secret_arn = "REPLACE_WITH_PROD_ARN"
 
-bedrock_model_id = "anthropic.claude-3-haiku-20240307-v1:0"
+bedrock_model_id = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
 
 domain_name     = "gameshift.live"
 www_domain_name = "www.gameshift.live"
