@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import OffsetSlider from '@/components/dashboard/OffsetSlider';
 import EventFeed from '@/components/dashboard/EventFeed';
 import CommentaryPanel from '@/components/dashboard/CommentaryPanel';
+import FixtureList from '@/components/dashboard/FixtureList';
 import { useEventBuffer } from '@/lib/useEventBuffer';
 import { API_BASE_URL } from '@/lib/constants';
 
@@ -11,6 +12,7 @@ const SPORTS = ['SOCCER', 'FOOTBALL', 'BASKETBALL', 'BASEBALL', 'HOCKEY', 'FORMU
 
 export default function DashboardPage() {
     const [selectedSport, setSelectedSport] = useState<string>('SOCCER');
+    const [selectedFixtureId, setSelectedFixtureId] = useState<string | null>(null);
     const [activeSports, setActiveSports] = useState<string[]>(SPORTS);
 
     useEffect(() => {
@@ -31,11 +33,16 @@ export default function DashboardPage() {
         fetchActiveSports();
     }, []);
 
+    // Reset fixture selection when sport changes
+    useEffect(() => {
+        setSelectedFixtureId(null);
+    }, [selectedSport]);
+
     // Start at 0 seconds delay (real-time)
     const [offsetSeconds, setOffsetSeconds] = useState<number>(0);
 
-    // Destructure { visibleEvents } from the hook, passing only offsetSeconds
-    const { visibleEvents } = useEventBuffer(offsetSeconds);
+    // Pass fixtureId to useEventBuffer — no SSE connection when null
+    const { visibleEvents } = useEventBuffer(offsetSeconds, selectedFixtureId);
 
     // Filter the events locally so we only see the sport we clicked on!
     const filteredEvents = visibleEvents.filter(e => e.sportType === selectedSport);
@@ -80,46 +87,74 @@ export default function DashboardPage() {
                 <OffsetSlider offsetSeconds={offsetSeconds} onChange={setOffsetSeconds} />
             </div>
 
-            {/* Main Content Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '24px', alignItems: 'start' }}>
+            {/* Fixture List */}
+            <FixtureList
+                sport={selectedSport}
+                selectedFixtureId={selectedFixtureId}
+                onSelectFixture={setSelectedFixtureId}
+            />
 
-                {/* Left Side: Live Feed */}
-                <div style={{
-                    background: 'rgba(255,255,255,0.02)',
-                    border: '1px solid rgba(255,255,255,0.05)',
-                    borderRadius: '16px',
-                    padding: '24px'
-                }}>
-                    <h3 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '24px', color: '#00b4db' }}>
-                        Live Feed
-                    </h3>
-                    <EventFeed events={filteredEvents} />
+            {/* Main Content Grid — only shown when a fixture is selected */}
+            {selectedFixtureId ? (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '24px', alignItems: 'start' }}>
+
+                    {/* Left Side: Live Feed */}
+                    <div style={{
+                        background: 'rgba(255,255,255,0.02)',
+                        border: '1px solid rgba(255,255,255,0.05)',
+                        borderRadius: '16px',
+                        padding: '24px'
+                    }}>
+                        <h3 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '24px', color: '#00b4db' }}>
+                            Live Feed
+                        </h3>
+                        <EventFeed events={filteredEvents} />
+                    </div>
+
+                    {/* Right Side: AI Commentary */}
+                    <div style={{
+                        background: 'rgba(255,255,255,0.02)',
+                        border: '1px solid rgba(255,255,255,0.05)',
+                        borderRadius: '16px',
+                        padding: '24px',
+                        position: 'sticky',
+                        top: '24px'
+                    }}>
+                        <h3 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '24px', color: '#00b4db' }}>
+                            Color Commentary
+                        </h3>
+
+                        {/* Ensure we actually have an event before rendering the panel to avoid undefined errors */}
+                        {filteredEvents.length > 0 ? (
+                            <CommentaryPanel eventId={filteredEvents[0].eventId} />
+                        ) : (
+                            <p style={{ color: '#888', fontStyle: 'italic', fontSize: '14px' }}>
+                                Waiting for live events to generate AI commentary...
+                            </p>
+                        )}
+                    </div>
+
                 </div>
-
-                {/* Right Side: AI Commentary */}
+            ) : (
                 <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '48px 24px',
                     background: 'rgba(255,255,255,0.02)',
-                    border: '1px solid rgba(255,255,255,0.05)',
                     borderRadius: '16px',
-                    padding: '24px',
-                    position: 'sticky',
-                    top: '24px'
+                    border: '1px solid rgba(255,255,255,0.05)',
+                    textAlign: 'center'
                 }}>
-                    <h3 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '24px', color: '#00b4db' }}>
-                        Color Commentary
-                    </h3>
-
-                    {/* Ensure we actually have an event before rendering the panel to avoid undefined errors */}
-                    {filteredEvents.length > 0 ? (
-                        <CommentaryPanel eventId={filteredEvents[0].eventId} />
-                    ) : (
-                        <p style={{ color: '#888', fontStyle: 'italic', fontSize: '14px' }}>
-                            Waiting for live events to generate AI commentary...
-                        </p>
-                    )}
+                    <p style={{ color: '#94a3b8', fontSize: '16px', fontWeight: 500 }}>
+                        Select a fixture above to start streaming events
+                    </p>
+                    <p style={{ color: '#64748b', fontSize: '13px', marginTop: '8px' }}>
+                        Choose a sport and pick a match to see the live feed and AI commentary.
+                    </p>
                 </div>
-
-            </div>
+            )}
         </div>
     );
 }

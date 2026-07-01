@@ -11,11 +11,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 
 @WebMvcTest(EventController.class)
@@ -31,11 +31,27 @@ class EventControllerTest {
     @Test
     void streamEvents_shouldReturnSseEmitter() throws Exception {
         SseEmitter mockEmitter = new SseEmitter(0L);
-        when(sseEmitterService.createEmitter()).thenReturn(mockEmitter);
+        when(sseEmitterService.createEmitter(any())).thenReturn(mockEmitter);
 
         mockMvc.perform(get("/api/events/stream")
                         .accept(MediaType.TEXT_EVENT_STREAM))
                 .andExpect(status().isOk())
                 .andExpect(request().asyncStarted());
+
+        verify(sseEmitterService).createEmitter(null);
+    }
+
+    @Test
+    void streamEvents_withFixtureId_shouldPassToService() throws Exception {
+        SseEmitter mockEmitter = new SseEmitter(0L);
+        when(sseEmitterService.createEmitter("fixture-42")).thenReturn(mockEmitter);
+
+        mockMvc.perform(get("/api/events/stream")
+                        .param("fixtureId", "fixture-42")
+                        .accept(MediaType.TEXT_EVENT_STREAM))
+                .andExpect(status().isOk())
+                .andExpect(request().asyncStarted());
+
+        verify(sseEmitterService).createEmitter("fixture-42");
     }
 }

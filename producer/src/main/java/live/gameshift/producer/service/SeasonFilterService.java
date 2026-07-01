@@ -40,6 +40,7 @@ public class SeasonFilterService {
 
     private final Map<SportType, RestClient> restClients = new EnumMap<>(SportType.class);
     private final Map<SportType, AppProperties.SportConfig> configs;
+    private final boolean mockMode;
 
     /**
      * Volatile reference to an immutable map for thread-safe reads from PollingService.
@@ -49,6 +50,18 @@ public class SeasonFilterService {
 
     public SeasonFilterService(AppProperties props, SecretsService secretsService) {
         this.configs = props.getApi().getSports().getConfigs();
+        this.mockMode = props.getApi().getSports().isMockMode();
+
+        // In mock mode, skip all API-Sports connectivity — mark everything active immediately
+        if (this.mockMode) {
+            Map<SportType, Boolean> initial = new EnumMap<>(SportType.class);
+            for (SportType sport : configs.keySet()) {
+                initial.put(sport, true);
+            }
+            this.activeSports = Collections.unmodifiableMap(initial);
+            log.info("Mock mode enabled — all configured sports marked as active: {}", configs.keySet());
+            return;
+        }
 
         String apiKey = secretsService.getApiSportsKey();
 
@@ -77,6 +90,10 @@ public class SeasonFilterService {
      */
     @EventListener(ApplicationReadyEvent.class)
     public void onStartup() {
+        if (mockMode) {
+            log.info("Mock mode — skipping season filter API check at startup");
+            return;
+        }
         log.info("Running initial season filter check");
         refreshActiveSports();
     }
@@ -86,6 +103,10 @@ public class SeasonFilterService {
      */
     @Scheduled(cron = "0 0 0 * * *", zone = "UTC")
     public void dailyCheck() {
+        if (mockMode) {
+            log.debug("Mock mode — skipping scheduled season filter check");
+            return;
+        }
         log.info("Running scheduled daily season filter check");
         refreshActiveSports();
     }

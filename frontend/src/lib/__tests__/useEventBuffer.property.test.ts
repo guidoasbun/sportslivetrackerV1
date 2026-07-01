@@ -97,8 +97,8 @@ describe("useEventBuffer - Property Tests", () => {
           // Mock Date.now to return our fixed value
           const dateNowSpy = vi.spyOn(Date, "now").mockReturnValue(fixedNow);
 
-          // Render the hook with the given offset
-          const { result } = renderHook(() => useEventBuffer(offsetSeconds));
+          // Render the hook with the given offset and a fixtureId to trigger SSE connection
+          const { result } = renderHook(() => useEventBuffer(offsetSeconds, 'test-fixture'));
 
           // Get the EventSource instance and simulate sending all events
           const eventSource = MockEventSource.instances[MockEventSource.instances.length - 1];

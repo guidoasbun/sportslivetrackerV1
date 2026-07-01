@@ -10,6 +10,7 @@ public class SportEvent {
     private Map<String, String> participants;
     private String rawPayload;
     private Long eventTimestamp;
+    private String fixtureId;
 
     public SportEvent() {}
 
@@ -40,4 +41,7 @@ public class SportEvent {
 
     public Long getEventTimestamp() { return eventTimestamp; }
     public void setEventTimestamp(Long eventTimestamp) { this.eventTimestamp = eventTimestamp; }
+
+    public String getFixtureId() { return fixtureId; }
+    public void setFixtureId(String fixtureId) { this.fixtureId = fixtureId; }
 }

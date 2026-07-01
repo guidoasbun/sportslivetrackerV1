@@ -195,29 +195,29 @@ This plan implements the remaining 20% of GameShift Live — completing auth flo
     - **Property 7: Season filter partitions sports correctly** — generate sport sets with varying fixture availability, verify active/inactive partition matches expectations
     - **Validates: Requirements 13.1, 13.2, 13.3**
 
-- [ ] 9. Per-game fixture selection
-  - [ ] 9.1 Add `fixtureId` to producer SportEvent model and normalizers
+- [x] 9. Per-game fixture selection
+  - [x] 9.1 Add `fixtureId` to producer SportEvent model and normalizers
     - Add `fixtureId` field to `SportEvent` model in producer
     - Update `SoccerNormalizer` (and other normalizers) to extract fixture ID from API-Sports response
     - _Requirements: 14.4_
 
-  - [ ] 9.2 Add `fixtureId` to API service Event model
+  - [x] 9.2 Add `fixtureId` to API service Event model
     - Add `fixtureId` field to `Event` DynamoDB bean
     - Update EventDto to include fixtureId
     - _Requirements: 14.4_
 
-  - [ ] 9.3 Create `FixtureController` in API service
+  - [x] 9.3 Create `FixtureController` in API service
     - `GET /api/fixtures?sport={sportType}` — returns live + upcoming fixtures
     - Each fixture: participant names, status (live/scheduled/finished), start time, fixture ID
     - _Requirements: 14.3_
 
-  - [ ] 9.4 Update SSE stream endpoint to support fixture filtering
+  - [x] 9.4 Update SSE stream endpoint to support fixture filtering
     - Accept optional `?fixtureId=X` query param on `GET /api/events/stream`
     - `SseEmitterService`: store metadata (sport, fixtureId) per emitter
     - `EventService`: send events only to matching emitters
     - _Requirements: 14.2, 14.3_
 
-  - [ ] 9.5 Create `FixtureList` UI component and integrate into dashboard
+  - [x] 9.5 Create `FixtureList` UI component and integrate into dashboard
     - File: `frontend/src/components/dashboard/FixtureList.tsx`
     - Show participants, match status, start time for each fixture
     - Dashboard flow: select sport → show fixture list → select fixture → open SSE with fixtureId
@@ -225,7 +225,7 @@ This plan implements the remaining 20% of GameShift Live — completing auth flo
     - Handle fetch errors with retry option
     - _Requirements: 14.1, 14.2, 14.5, 14.6_
 
-  - [ ]* 9.6 Write property test for fixture-filtered SSE
+  - [x] 9.6 Write property test for fixture-filtered SSE
     - **Property 8: Fixture-filtered SSE stream delivers only matching events** — generate events with various fixtureIds, verify only matching events delivered to subscribed connection
     - **Validates: Requirements 14.2, 14.3**
 

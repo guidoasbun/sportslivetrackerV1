@@ -6,18 +6,29 @@ import { API_BASE_URL } from '@/lib/constants';
 // We limit the buffer so we don't crash the user's browser if the stream runs for 10 hours
 const MAX_BUFFER_SIZE = 500;
 
-export function useEventBuffer(offsetSeconds: number) {
+export function useEventBuffer(offsetSeconds: number, fixtureId: string | null = null) {
     // Store all events we've received from the backend
     const [events, setEvents] = useState<SportEvent[]>([]);
     const [isConnected, setIsConnected] = useState(false);
 
     useEffect(() => {
-        // 1. Establish the Server-Sent Events (SSE) open connection
-        const eventSource = new EventSource(`${API_BASE_URL}/events/stream`);
+        // If no fixtureId is provided, don't open the SSE connection
+        if (!fixtureId) {
+            setEvents([]);
+            setIsConnected(false);
+            return;
+        }
+
+        // Clear events when fixtureId changes (fresh start for new fixture)
+        setEvents([]);
+
+        // 1. Establish the Server-Sent Events (SSE) open connection with fixtureId
+        const url = `${API_BASE_URL}/events/stream?fixtureId=${fixtureId}`;
+        const eventSource = new EventSource(url);
 
         eventSource.onopen = () => {
             setIsConnected(true);
-            console.log('Connected to live event stream!');
+            console.log(`Connected to live event stream for fixture ${fixtureId}!`);
         };
 
         // 2. Listen for incoming data
@@ -41,11 +52,11 @@ export function useEventBuffer(offsetSeconds: number) {
             eventSource.close();
         };
 
-        // 3. Cleanup: close connection when the user leaves the page
+        // 3. Cleanup: close connection when the user leaves the page or fixtureId changes
         return () => {
             eventSource.close();
         };
-    }, []); // The empty array [] means this connection code only runs ONCE when the dashboard loads
+    }, [fixtureId]); // Re-open the connection when fixtureId changes
 
     // 4. The Time-Travel Logic!
     const visibleEvents = useMemo(() => {

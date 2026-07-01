@@ -74,6 +74,13 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- jqwik property-based testing framework -->
+        <dependency>
+            <groupId>net.jqwik</groupId>
+            <artifactId>jqwik</artifactId>
+            <version>1.9.1</version>
+            <scope>test</scope>
+        </dependency>
         <!-- Override Mockito/Byte Buddy versions from Spring Boot parent for Java 26 compatibility -->
         <dependency>
             <groupId>org.mockito</groupId>

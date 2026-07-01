@@ -4,6 +4,7 @@ import live.gameshift.api.service.SseEmitterService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -20,7 +21,8 @@ public class EventController {
     // Notice the "produces" type! This tells Spring not to close the HTTP connection
     // and instead format the response as a continuous stream of events.
     @GetMapping(path = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter streamEvents() {
-        return sseEmitterService.createEmitter();
+    public SseEmitter streamEvents(
+            @RequestParam(value = "fixtureId", required = false) String fixtureId) {
+        return sseEmitterService.createEmitter(fixtureId);
     }
 }

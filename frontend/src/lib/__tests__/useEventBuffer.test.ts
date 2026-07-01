@@ -32,6 +32,8 @@ function createEvent(overrides: Partial<SportEvent> = {}): SportEvent {
     };
 }
 
+const TEST_FIXTURE_ID = 'fixture-123';
+
 describe('useEventBuffer', () => {
     beforeEach(() => {
         vi.stubGlobal('EventSource', MockEventSource);
@@ -50,7 +52,7 @@ describe('useEventBuffer', () => {
         // Event happened 15 seconds ago — should be visible
         const oldEvent = createEvent({ eventId: 'old-1', eventTimestamp: now - 15000 });
 
-        const { result } = renderHook(() => useEventBuffer(offsetSeconds));
+        const { result } = renderHook(() => useEventBuffer(offsetSeconds, TEST_FIXTURE_ID));
 
         // Simulate connection open and receiving a message
         act(() => {
@@ -71,7 +73,7 @@ describe('useEventBuffer', () => {
         // Event happened 3 seconds ago — too recent, should be excluded
         const recentEvent = createEvent({ eventId: 'recent-1', eventTimestamp: now - 3000 });
 
-        const { result } = renderHook(() => useEventBuffer(offsetSeconds));
+        const { result } = renderHook(() => useEventBuffer(offsetSeconds, TEST_FIXTURE_ID));
 
         act(() => {
             mockEventSourceInstance.onopen?.();
@@ -87,7 +89,7 @@ describe('useEventBuffer', () => {
         const now = 1000000;
         vi.spyOn(Date, 'now').mockReturnValue(now);
 
-        const { result } = renderHook(() => useEventBuffer(0));
+        const { result } = renderHook(() => useEventBuffer(0, TEST_FIXTURE_ID));
 
         act(() => {
             mockEventSourceInstance.onopen?.();
@@ -104,5 +106,39 @@ describe('useEventBuffer', () => {
         expect(result.current.totalBuffered).toBe(500);
         // The most recent events should be kept (they're prepended)
         expect(result.current.visibleEvents[0].eventId).toBe('event-509');
+    });
+
+    it('does not open EventSource when fixtureId is null', () => {
+        const { result } = renderHook(() => useEventBuffer(0, null));
+
+        expect(result.current.visibleEvents).toHaveLength(0);
+        expect(result.current.isConnected).toBe(false);
+        expect(result.current.totalBuffered).toBe(0);
+    });
+
+    it('clears events and reconnects when fixtureId changes', () => {
+        const now = 1000000;
+        vi.spyOn(Date, 'now').mockReturnValue(now);
+
+        let fixtureId = 'fixture-A';
+        const { result, rerender } = renderHook(
+            ({ offset, fId }) => useEventBuffer(offset, fId),
+            { initialProps: { offset: 0, fId: fixtureId } }
+        );
+
+        // Receive an event on fixture-A
+        act(() => {
+            mockEventSourceInstance.onopen?.();
+            mockEventSourceInstance.onmessage?.({
+                data: JSON.stringify(createEvent({ eventId: 'ev-A', eventTimestamp: now - 5000 }))
+            });
+        });
+        expect(result.current.totalBuffered).toBe(1);
+
+        // Change to fixture-B — events should clear
+        fixtureId = 'fixture-B';
+        rerender({ offset: 0, fId: fixtureId });
+
+        expect(result.current.totalBuffered).toBe(0);
     });
 });
