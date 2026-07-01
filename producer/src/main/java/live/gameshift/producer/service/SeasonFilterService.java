@@ -116,10 +116,12 @@ public class SeasonFilterService {
         Map<SportType, Boolean> newStatus = new EnumMap<>(SportType.class);
 
         String todayDate = LocalDate.now(ZoneOffset.UTC).format(DATE_FORMAT);
+        String tomorrowDate = LocalDate.now(ZoneOffset.UTC).plusDays(1).format(DATE_FORMAT);
 
         for (SportType sport : configs.keySet()) {
             try {
-                boolean hasFixtures = checkFixturesForSport(sport, todayDate);
+                boolean hasFixtures = checkFixturesForSport(sport, todayDate)
+                        || checkFixturesForSport(sport, tomorrowDate);
                 newStatus.put(sport, hasFixtures);
             } catch (Exception e) {
                 // On failure, retain previous status

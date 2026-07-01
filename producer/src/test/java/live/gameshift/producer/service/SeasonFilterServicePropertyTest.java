@@ -4,15 +4,11 @@ import live.gameshift.producer.config.AppProperties;
 import live.gameshift.producer.config.SecretsService;
 import live.gameshift.producer.model.SportType;
 import net.jqwik.api.*;
-import net.jqwik.api.constraints.IntRange;
-import org.mockito.Mockito;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
