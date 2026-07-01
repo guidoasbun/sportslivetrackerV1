@@ -346,16 +346,26 @@ public class MockDataService {
     // ─────────────────────────────────────────────────────────────────────────────
 
     private String buildRawPayload(MockFixture fixture, String action) {
+        // Properly quote string fields and escape special characters for valid JSON
         return String.format(
             "{\"mock\":true,\"response\":[{" +
-                "\"fixture\":{\"id\":%s,\"status\":{\"short\":\"%s\",\"elapsed\":%d}}," +
+                "\"fixture\":{\"id\":\"%s\",\"status\":{\"short\":\"%s\",\"elapsed\":%d}}," +
                 "\"teams\":{\"home\":{\"name\":\"%s\"},\"away\":{\"name\":\"%s\"}}," +
                 "\"goals\":{\"home\":%d,\"away\":%d}" +
             "}]}",
-            fixture.fixtureId, fixture.getStatus(), fixture.gameMinute,
-            fixture.homeTeam, fixture.awayTeam,
-            fixture.homeScore, fixture.awayScore
+            escapeJson(fixture.fixtureId),
+            escapeJson(fixture.getStatus()),
+            fixture.gameMinute,
+            escapeJson(fixture.homeTeam),
+            escapeJson(fixture.awayTeam),
+            fixture.homeScore,
+            fixture.awayScore
         );
+    }
+
+    private static String escapeJson(String value) {
+        if (value == null) return "";
+        return value.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
     // ─────────────────────────────────────────────────────────────────────────────

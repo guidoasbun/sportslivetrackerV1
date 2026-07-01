@@ -23,7 +23,7 @@ export function useEventBuffer(offsetSeconds: number, fixtureId: string | null =
         setEvents([]);
 
         // 1. Establish the Server-Sent Events (SSE) open connection with fixtureId
-        const url = `${API_BASE_URL}/events/stream?fixtureId=${fixtureId}`;
+        const url = `${API_BASE_URL}/events/stream?fixtureId=${encodeURIComponent(fixtureId)}`;
         const eventSource = new EventSource(url);
 
         eventSource.onopen = () => {

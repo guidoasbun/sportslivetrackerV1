@@ -5,6 +5,8 @@ api_sports_key_arn               = "REPLACE_WITH_PROD_ARN"
 cognito_google_client_id_arn     = "REPLACE_WITH_PROD_ARN"
 cognito_google_client_secret_arn = "REPLACE_WITH_PROD_ARN"
 
+# Claude Haiku 4.5 — fast, low-cost model for per-event sports commentary generation.
+# Aligned with dev environment. Requires terraform apply to update the Lambda env var.
 bedrock_model_id = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
 
 domain_name     = "gameshift.live"

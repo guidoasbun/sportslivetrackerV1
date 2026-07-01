@@ -143,7 +143,8 @@ export default function FixtureList({ sport, selectedFixtureId, onSelectFixture 
             {fixtures.map(fixture => {
                 const isSelected = fixture.fixtureId === selectedFixtureId;
                 const statusInfo = getStatusIndicator(fixture.status);
-                const participants = Object.values(fixture.participants);
+                const home = fixture.participants?.home || 'TBD';
+                const away = fixture.participants?.away || 'TBD';
 
                 return (
                     <button
@@ -167,9 +168,7 @@ export default function FixtureList({ sport, selectedFixtureId, onSelectFixture 
                     >
                         {/* Participants */}
                         <div style={{ color: 'white', fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>
-                            {participants.length >= 2
-                                ? `${participants[0]} vs ${participants[1]}`
-                                : participants.join(', ') || 'TBD'}
+                            {`${home} vs ${away}`}
                         </div>
 
                         {/* Status and time */}

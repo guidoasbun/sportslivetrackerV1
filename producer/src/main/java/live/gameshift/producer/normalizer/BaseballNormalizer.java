@@ -38,8 +38,8 @@ public class BaseballNormalizer implements SportNormalizer {
         }
 
         JsonNode fixture = responseArray.path(0);
-        JsonNode fixtureIdNode = fixture.path("id");
-        String fixtureId = fixtureIdNode.isMissingNode() || fixtureIdNode.isNull() ? null : String.valueOf(fixtureIdNode.asInt());
+        JsonNode fixtureIdNode = fixture.path("fixture").path("id");
+        String fixtureId = fixtureIdNode.isMissingNode() || fixtureIdNode.isNull() ? null : fixtureIdNode.asText();
 
         SportEvent event = new SportEvent(
                 UUID.randomUUID().toString(),
