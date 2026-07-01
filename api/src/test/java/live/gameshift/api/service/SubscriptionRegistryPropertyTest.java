@@ -6,6 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /**
  * Property-based test for SubscriptionRegistry count invariant.
  *
@@ -56,8 +59,8 @@ class SubscriptionRegistryPropertyTest {
 
             // Invariant: count must never be negative at any point
             int currentCount = registry.getCount(op.sportType, op.fixtureId);
-            assert currentCount >= 0 :
-                    String.format("Count went negative for %s: %d", key, currentCount);
+            assertTrue(currentCount >= 0,
+                    String.format("Count went negative for %s: %d", key, currentCount));
         }
 
         // After all operations, verify final counts match the model
@@ -68,9 +71,9 @@ class SubscriptionRegistryPropertyTest {
             String[] parts = key.split(":", 2);
             int actualCount = registry.getCount(parts[0], parts[1]);
 
-            assert actualCount == expectedCount :
+            assertEquals(expectedCount, actualCount,
                     String.format("Count mismatch for %s: expected %d, got %d",
-                            key, expectedCount, actualCount);
+                            key, expectedCount, actualCount));
         }
     }
 

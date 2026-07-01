@@ -112,7 +112,12 @@ public class SseEmitterService {
         List<EmitterEntry> deadEntries = new ArrayList<>();
 
         this.emitters.forEach(entry -> {
-            // Only send to emitters whose fixtureId matches, or that are subscribed to all events
+            // Skip if this emitter is filtering for a specific sport that doesn't match
+            if (!"ALL".equals(entry.sportType()) && !entry.sportType().equals(eventDto.sportType().name())) {
+                return; // skip — this emitter is filtering for a different sport
+            }
+
+            // Skip if this emitter is filtering for a specific fixture that doesn't match
             if (entry.fixtureId() != null && !entry.fixtureId().equals(eventDto.fixtureId())) {
                 return; // skip — this emitter is filtering for a different fixture
             }

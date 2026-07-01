@@ -110,8 +110,10 @@ public class SubscriptionRegistry {
 
     /**
      * Periodically checks for stale emitters that haven't received a heartbeat
-     * within the timeout period (120s). Stale emitters are closed and their
-     * subscription counts decremented.
+     * within the timeout period (120s). Stale emitters are closed, which triggers
+     * the onCompletion/onError callback in SseEmitterService — that callback is
+     * responsible for decrementing the subscription count. We only clean up the
+     * tracking maps here to avoid double-decrementing.
      */
     @Scheduled(fixedRate = 30_000L)
     public void evictStaleEmitters() {
@@ -122,22 +124,18 @@ public class SubscriptionRegistry {
                 String key = emitterKeys.get(emitter);
                 log.info("Evicting stale emitter for key={}, last activity {}ms ago", key, now - lastActivity);
 
-                // Close the stale emitter
+                // Clean up tracking maps before completing, so the callback's
+                // unregisterEmitter() call is a safe no-op
+                emitterLastActivity.remove(emitter);
+                emitterKeys.remove(emitter);
+
+                // Close the stale emitter — this triggers SseEmitterService's
+                // onCompletion callback which handles the decrement
                 try {
                     emitter.complete();
                 } catch (Exception e) {
                     log.debug("Error completing stale emitter: {}", e.getMessage());
                 }
-
-                // Decrement subscription count
-                if (key != null) {
-                    subscriptionCounts.computeIfAbsent(key, k -> new AtomicInteger(0))
-                            .updateAndGet(current -> Math.max(0, current - 1));
-                }
-
-                // Clean up tracking maps
-                emitterLastActivity.remove(emitter);
-                emitterKeys.remove(emitter);
             }
         });
     }

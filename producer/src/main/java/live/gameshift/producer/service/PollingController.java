@@ -6,10 +6,12 @@ import live.gameshift.producer.model.SportType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -34,10 +36,21 @@ public class PollingController {
      */
     private volatile Set<ActiveSubscription> activeSubscriptions = Collections.emptySet();
 
+    /**
+     * When true, at least one subscriber is connected without a specific sport filter ("ALL").
+     * This means all sports should be considered active for polling.
+     */
+    private volatile boolean allSportsActive = false;
+
     public PollingController(
             @Value("${app.api.service.url}") String apiServiceUrl,
             ObjectMapper objectMapper) {
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(Duration.ofSeconds(5));
+        requestFactory.setReadTimeout(Duration.ofSeconds(5));
+
         this.restClient = RestClient.builder()
+                .requestFactory(requestFactory)
                 .baseUrl(apiServiceUrl)
                 .build();
         this.objectMapper = objectMapper;
@@ -58,6 +71,7 @@ public class PollingController {
 
             if (response == null || response.isBlank() || "[]".equals(response.trim())) {
                 activeSubscriptions = Collections.emptySet();
+                allSportsActive = false;
                 log.debug("No active subscriptions returned from API service");
                 return;
             }
@@ -66,7 +80,14 @@ public class PollingController {
                     response, new TypeReference<List<ActiveSubscriptionDto>>() {});
 
             Set<ActiveSubscription> newActive = ConcurrentHashMap.newKeySet();
+            boolean hasAllSport = false;
             for (ActiveSubscriptionDto dto : dtos) {
+                if ("ALL".equals(dto.sportType())) {
+                    // "ALL" is a wildcard — subscriber connected without specifying a sport.
+                    // Treat this as all sports being active.
+                    hasAllSport = true;
+                    continue;
+                }
                 try {
                     SportType sportType = SportType.valueOf(dto.sportType());
                     newActive.add(new ActiveSubscription(sportType, dto.fixtureId()));
@@ -75,8 +96,10 @@ public class PollingController {
                 }
             }
 
+            allSportsActive = hasAllSport;
             activeSubscriptions = Collections.unmodifiableSet(newActive);
-            log.debug("Refreshed active subscriptions: {} sport/fixture combinations", newActive.size());
+            log.debug("Refreshed active subscriptions: {} sport/fixture combinations, allSportsActive={}",
+                    newActive.size(), hasAllSport);
 
         } catch (RestClientException e) {
             log.warn("API service subscriptions endpoint unreachable, retaining previous active list: {}",
@@ -91,15 +114,15 @@ public class PollingController {
      * Returns true if there is at least one active subscriber for any sport/fixture.
      */
     public boolean hasActiveSubscribers() {
-        return !activeSubscriptions.isEmpty();
+        return allSportsActive || !activeSubscriptions.isEmpty();
     }
 
     /**
      * Returns true if the given sport type has at least one active subscriber
-     * (regardless of fixture).
+     * (regardless of fixture). Also returns true if any "ALL" subscriber exists.
      */
     public boolean isSportActive(SportType sportType) {
-        return activeSubscriptions.stream()
+        return allSportsActive || activeSubscriptions.stream()
                 .anyMatch(sub -> sub.sportType() == sportType);
     }
 

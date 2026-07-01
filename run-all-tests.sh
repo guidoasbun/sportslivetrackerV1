@@ -11,19 +11,19 @@ echo ""
 
 echo "▶ API Service (Java/Maven)"
 echo "--------------------------------------------"
-mvn test -pl api -q
+./mvnw test -pl api
 echo "✓ API tests passed"
 echo ""
 
 echo "▶ Lambda Processor (Java/Maven)"
 echo "--------------------------------------------"
-mvn test -pl lambda -q
+./mvnw test -pl lambda
 echo "✓ Lambda tests passed"
 echo ""
 
 echo "▶ Producer Service (Java/Maven)"
 echo "--------------------------------------------"
-mvn test -pl producer -q
+./mvnw test -pl producer
 echo "✓ Producer tests passed"
 echo ""
 
