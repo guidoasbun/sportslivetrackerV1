@@ -261,20 +261,20 @@ This plan implements the remaining 20% of GameShift Live — completing auth flo
     - **Property 5: Subscription registry count invariant** — generate connect/disconnect sequences, verify count equals connects minus disconnects and never drops below zero
     - **Validates: Requirements 15.1, 15.2, 15.3**
 
-- [ ] 11. Frontend error boundaries and loading states
-  - [ ] 11.1 Create ErrorBoundary component
+- [x] 11. Frontend error boundaries and loading states
+  - [x] 11.1 Create ErrorBoundary component
     - File: `frontend/src/components/ErrorBoundary.tsx`
     - React class component wrapping dashboard
     - Catches render errors, shows fallback UI with error description + "Retry" button (reloads page)
     - _Requirements: 11.1_
 
-  - [ ] 11.2 Create loading skeleton components
+  - [x] 11.2 Create loading skeleton components
     - `frontend/src/components/dashboard/EventFeedSkeleton.tsx` — animated placeholders matching event feed dimensions
     - `frontend/src/components/dashboard/CommentaryPanelSkeleton.tsx` — animated placeholders matching commentary panel
     - Display while SSE connection is being established
     - _Requirements: 11.2_
 
-  - [ ] 11.3 Add SSE reconnection with exponential backoff to `useEventBuffer`
+  - [x] 11.3 Add SSE reconnection with exponential backoff to `useEventBuffer`
     - Exponential backoff: 1s → 2s → 4s → ... → 30s cap, 10 attempts max
     - Expose `reconnectionState` for UI banner
     - After 10 failures: show persistent error + manual "Reconnect" button that resets counter

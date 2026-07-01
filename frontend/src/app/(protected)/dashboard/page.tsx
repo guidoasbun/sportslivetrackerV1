@@ -5,6 +5,8 @@ import OffsetSlider from '@/components/dashboard/OffsetSlider';
 import EventFeed from '@/components/dashboard/EventFeed';
 import CommentaryPanel from '@/components/dashboard/CommentaryPanel';
 import FixtureList from '@/components/dashboard/FixtureList';
+import EventFeedSkeleton from '@/components/dashboard/EventFeedSkeleton';
+import CommentaryPanelSkeleton from '@/components/dashboard/CommentaryPanelSkeleton';
 import { useEventBuffer } from '@/lib/useEventBuffer';
 import { API_BASE_URL } from '@/lib/constants';
 
@@ -42,13 +44,79 @@ export default function DashboardPage() {
     const [offsetSeconds, setOffsetSeconds] = useState<number>(0);
 
     // Pass fixtureId to useEventBuffer — no SSE connection when null
-    const { visibleEvents } = useEventBuffer(offsetSeconds, selectedFixtureId);
+    const { visibleEvents, isConnected, reconnectionState, reconnect } = useEventBuffer(offsetSeconds, selectedFixtureId);
 
     // Filter the events locally so we only see the sport we clicked on!
     const filteredEvents = visibleEvents.filter(e => e.sportType === selectedSport);
 
+    // Determine if we should show loading skeletons:
+    // initial connection phase (not connected yet and not in failed state)
+    const showSkeletons = selectedFixtureId && !isConnected && reconnectionState.status !== 'failed';
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+
+            {/* Reconnection Banner */}
+            {reconnectionState.status === 'reconnecting' && (
+                <div
+                    role="alert"
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '12px 20px',
+                        background: 'rgba(234, 179, 8, 0.15)',
+                        border: '1px solid rgba(234, 179, 8, 0.4)',
+                        borderRadius: '12px',
+                        color: '#fbbf24',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                    }}
+                >
+                    <span>
+                        ⚠️ Connection lost. Reconnecting... (attempt {reconnectionState.attempt} of 10)
+                    </span>
+                </div>
+            )}
+
+            {/* Persistent Error Banner with Reconnect Button */}
+            {reconnectionState.status === 'failed' && (
+                <div
+                    role="alert"
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '12px 20px',
+                        background: 'rgba(239, 68, 68, 0.15)',
+                        border: '1px solid rgba(239, 68, 68, 0.4)',
+                        borderRadius: '12px',
+                        color: '#f87171',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                    }}
+                >
+                    <span>
+                        ❌ Unable to connect to live event stream after 10 attempts.
+                    </span>
+                    <button
+                        onClick={reconnect}
+                        style={{
+                            padding: '8px 16px',
+                            borderRadius: '8px',
+                            border: '1px solid rgba(239, 68, 68, 0.5)',
+                            background: 'rgba(239, 68, 68, 0.2)',
+                            color: '#f87171',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            fontSize: '13px',
+                        }}
+                    >
+                        Reconnect
+                    </button>
+                </div>
+            )}
 
             {/* Top Controls: Sport Selector and TV Delay Slider */}
             <div style={{
@@ -108,7 +176,11 @@ export default function DashboardPage() {
                         <h3 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '24px', color: '#00b4db' }}>
                             Live Feed
                         </h3>
-                        <EventFeed events={filteredEvents} />
+                        {showSkeletons ? (
+                            <EventFeedSkeleton />
+                        ) : (
+                            <EventFeed events={filteredEvents} />
+                        )}
                     </div>
 
                     {/* Right Side: AI Commentary */}
@@ -124,8 +196,9 @@ export default function DashboardPage() {
                             Color Commentary
                         </h3>
 
-                        {/* Ensure we actually have an event before rendering the panel to avoid undefined errors */}
-                        {filteredEvents.length > 0 ? (
+                        {showSkeletons ? (
+                            <CommentaryPanelSkeleton />
+                        ) : filteredEvents.length > 0 ? (
                             <CommentaryPanel eventId={filteredEvents[0].eventId} />
                         ) : (
                             <p style={{ color: '#888', fontStyle: 'italic', fontSize: '14px' }}>
