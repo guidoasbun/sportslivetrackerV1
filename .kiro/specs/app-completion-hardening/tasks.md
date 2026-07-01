@@ -229,8 +229,8 @@ This plan implements the remaining 20% of GameShift Live — completing auth flo
     - **Property 8: Fixture-filtered SSE stream delivers only matching events** — generate events with various fixtureIds, verify only matching events delivered to subscribed connection
     - **Validates: Requirements 14.2, 14.3**
 
-- [ ] 10. Session-aware polling
-  - [ ] 10.1 Create `SubscriptionRegistry` in API service
+- [x] 10. Session-aware polling
+  - [x] 10.1 Create `SubscriptionRegistry` in API service
     - File: `api/src/main/java/live/gameshift/api/service/SubscriptionRegistry.java`
     - `ConcurrentHashMap<String, AtomicInteger>` keyed by `sport:fixtureId`
     - Increment on SSE open, decrement on close/timeout/error
@@ -238,18 +238,18 @@ This plan implements the remaining 20% of GameShift Live — completing auth flo
     - Heartbeat timeout: close emitter and decrement if no ping within 120s
     - _Requirements: 15.1, 15.2, 15.3, 15.8_
 
-  - [ ] 10.2 Create `/api/subscriptions/active` endpoint in API service
+  - [x] 10.2 Create `/api/subscriptions/active` endpoint in API service
     - File: `api/src/main/java/live/gameshift/api/controller/SubscriptionController.java`
     - Returns entries with subscriber count > 0 (sport type + fixture ID)
     - _Requirements: 15.4_
 
-  - [ ] 10.3 Integrate SubscriptionRegistry with SseEmitterService
+  - [x] 10.3 Integrate SubscriptionRegistry with SseEmitterService
     - On new SSE connection: increment count for sport + fixture
     - On connection close/timeout/error: decrement count
     - Wire heartbeat timeout logic (120s)
     - _Requirements: 15.2, 15.3, 15.8_
 
-  - [ ] 10.4 Create `PollingController` in producer
+  - [x] 10.4 Create `PollingController` in producer
     - File: `producer/src/main/java/live/gameshift/producer/service/PollingController.java`
     - Before each poll cycle: call API service `/api/subscriptions/active`
     - Empty response → sleep 30s, check again
@@ -257,7 +257,7 @@ This plan implements the remaining 20% of GameShift Live — completing auth flo
     - Only poll sports/fixtures with active subscribers
     - _Requirements: 15.5, 15.6, 15.7_
 
-  - [ ]* 10.5 Write property test for subscription registry
+  - [x] 10.5 Write property test for subscription registry
     - **Property 5: Subscription registry count invariant** — generate connect/disconnect sequences, verify count equals connects minus disconnects and never drops below zero
     - **Validates: Requirements 15.1, 15.2, 15.3**
 
