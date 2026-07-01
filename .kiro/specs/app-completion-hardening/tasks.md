@@ -165,8 +165,8 @@ This plan implements the remaining 20% of GameShift Live — completing auth flo
     - Implement error handling: catch 401/403/5xx → log sport + endpoint + status, skip sport this cycle
     - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6_
 
-- [ ] 8. Season filtering
-  - [ ] 8.1 Create `SeasonFilterService` in producer
+- [x] 8. Season filtering
+  - [x] 8.1 Create `SeasonFilterService` in producer
     - File: `producer/src/main/java/live/gameshift/producer/service/SeasonFilterService.java`
     - At startup + daily (00:00 UTC via `@Scheduled`), query each sport's fixtures for next 24 hours
     - Maintain `Map<SportType, Boolean> activeSports` (volatile, atomic update)
@@ -174,24 +174,24 @@ This plan implements the remaining 20% of GameShift Live — completing auth flo
     - Log INFO: which sports are active/skipped at each check
     - _Requirements: 13.1, 13.2, 13.3, 13.4, 13.5_
 
-  - [ ] 8.2 Integrate season filter into `PollingService`
+  - [x] 8.2 Integrate season filter into `PollingService`
     - Before polling each sport, check `seasonFilterService.isActive(sportType)`
     - Skip inactive sports in the polling cycle
     - _Requirements: 13.2, 13.3_
 
-  - [ ] 8.3 Create active sports API endpoint
+  - [x] 8.3 Create active sports API endpoint
     - Add `GET /api/sports/active` endpoint in API service
     - Returns JSON array of currently active sport types
     - Producer exposes its active sports state via an internal endpoint or shared config
     - _Requirements: 13.6_
 
-  - [ ] 8.4 Update frontend sport selector to filter by active sports
+  - [x] 8.4 Update frontend sport selector to filter by active sports
     - Fetch `/api/sports/active` on dashboard load
     - Only render sports marked as active in the selector bar
     - Hide sports with no active fixtures
     - _Requirements: 13.7_
 
-  - [ ]* 8.5 Write property test for season filter
+  - [x] 8.5 Write property test for season filter
     - **Property 7: Season filter partitions sports correctly** — generate sport sets with varying fixture availability, verify active/inactive partition matches expectations
     - **Validates: Requirements 13.1, 13.2, 13.3**
 
