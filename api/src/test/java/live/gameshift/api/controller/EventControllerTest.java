@@ -31,20 +31,20 @@ class EventControllerTest {
     @Test
     void streamEvents_shouldReturnSseEmitter() throws Exception {
         SseEmitter mockEmitter = new SseEmitter(0L);
-        when(sseEmitterService.createEmitter(any())).thenReturn(mockEmitter);
+        when(sseEmitterService.createEmitter(any(String.class), any())).thenReturn(mockEmitter);
 
         mockMvc.perform(get("/api/events/stream")
                         .accept(MediaType.TEXT_EVENT_STREAM))
                 .andExpect(status().isOk())
                 .andExpect(request().asyncStarted());
 
-        verify(sseEmitterService).createEmitter(null);
+        verify(sseEmitterService).createEmitter("ALL", null);
     }
 
     @Test
     void streamEvents_withFixtureId_shouldPassToService() throws Exception {
         SseEmitter mockEmitter = new SseEmitter(0L);
-        when(sseEmitterService.createEmitter("fixture-42")).thenReturn(mockEmitter);
+        when(sseEmitterService.createEmitter(any(String.class), any(String.class))).thenReturn(mockEmitter);
 
         mockMvc.perform(get("/api/events/stream")
                         .param("fixtureId", "fixture-42")
@@ -52,6 +52,35 @@ class EventControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(request().asyncStarted());
 
-        verify(sseEmitterService).createEmitter("fixture-42");
+        verify(sseEmitterService).createEmitter("ALL", "fixture-42");
+    }
+
+    @Test
+    void streamEvents_withSportParam_shouldPassToService() throws Exception {
+        SseEmitter mockEmitter = new SseEmitter(0L);
+        when(sseEmitterService.createEmitter(any(String.class), any())).thenReturn(mockEmitter);
+
+        mockMvc.perform(get("/api/events/stream")
+                        .param("sport", "SOCCER")
+                        .accept(MediaType.TEXT_EVENT_STREAM))
+                .andExpect(status().isOk())
+                .andExpect(request().asyncStarted());
+
+        verify(sseEmitterService).createEmitter("SOCCER", null);
+    }
+
+    @Test
+    void streamEvents_withSportAndFixture_shouldPassBothToService() throws Exception {
+        SseEmitter mockEmitter = new SseEmitter(0L);
+        when(sseEmitterService.createEmitter(any(String.class), any(String.class))).thenReturn(mockEmitter);
+
+        mockMvc.perform(get("/api/events/stream")
+                        .param("sport", "BASKETBALL")
+                        .param("fixtureId", "fixture-99")
+                        .accept(MediaType.TEXT_EVENT_STREAM))
+                .andExpect(status().isOk())
+                .andExpect(request().asyncStarted());
+
+        verify(sseEmitterService).createEmitter("BASKETBALL", "fixture-99");
     }
 }

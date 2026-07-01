@@ -43,7 +43,8 @@ class SseEmitterServicePropertyTest {
             @ForAll("fixtureFilterScenario") FilterScenario scenario) throws IOException {
 
         // Create a fresh service for each property trial
-        SseEmitterService service = new SseEmitterService();
+        SubscriptionRegistry registry = new SubscriptionRegistry();
+        SseEmitterService service = new SseEmitterService(registry);
 
         // Track which emitters received sends via Mockito spies
         Map<String, SseEmitter> spyEmitters = new LinkedHashMap<>();
@@ -60,7 +61,7 @@ class SseEmitterServicePropertyTest {
             spyEmitters.put(emitterId, spyEmitter);
 
             // Inject the spy emitter into the service's internal list
-            service.getEmitters().add(new SseEmitterService.EmitterEntry(spyEmitter, subscribedFixtureId));
+            service.getEmitters().add(new SseEmitterService.EmitterEntry(spyEmitter, "ALL", subscribedFixtureId));
         }
 
         // Broadcast each event and verify filtering
