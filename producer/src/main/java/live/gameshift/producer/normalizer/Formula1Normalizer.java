@@ -37,12 +37,19 @@ public class Formula1Normalizer implements SportNormalizer {
             return Optional.empty();
         }
 
-        return Optional.of(new SportEvent(
+        JsonNode fixture = responseArray.path(0);
+        JsonNode fixtureIdNode = fixture.path("fixture").path("id");
+        String fixtureId = fixtureIdNode.isMissingNode() || fixtureIdNode.isNull() ? null : fixtureIdNode.asText();
+
+        SportEvent event = new SportEvent(
                 UUID.randomUUID().toString(),
                 SportType.FORMULA_1,
                 "NS",
                 Map.of("driver", "Unknown", "team", "Unknown"),
                 json
-        ));
+        );
+        event.setFixtureId(fixtureId);
+
+        return Optional.of(event);
     }
 }

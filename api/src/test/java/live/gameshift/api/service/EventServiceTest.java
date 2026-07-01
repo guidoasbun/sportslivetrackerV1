@@ -40,7 +40,7 @@ class EventServiceTest {
 
     @BeforeEach
     void setUp() {
-        eventService = new EventService(eventRepository, sseEmitterService);
+        eventService = new EventService(eventRepository, sseEmitterService, false);
         // Reset lastPollTime to a known value for testing
         ReflectionTestUtils.setField(eventService, "lastPollTime", 1000L);
         ReflectionTestUtils.setField(eventService, "processedIdsAtLastPollTime", new HashSet<>(List.of("0")));

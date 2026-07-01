@@ -44,12 +44,18 @@ public class SoccerNormalizer implements SportNormalizer {
         String awayTeam = fixture.path("teams").path("away").path("name").asText("Unknown");
         String status = fixture.path("fixture").path("status").path("short").asText("NS");
 
-        return Optional.of(new SportEvent(
+        JsonNode fixtureIdNode = fixture.path("fixture").path("id");
+        String fixtureId = fixtureIdNode.isMissingNode() || fixtureIdNode.isNull() ? null : fixtureIdNode.asText();
+
+        SportEvent event = new SportEvent(
                 UUID.randomUUID().toString(),
                 SportType.SOCCER,
                 status,
                 Map.of("home", homeTeam, "away", awayTeam),
                 json
-        ));
+        );
+        event.setFixtureId(fixtureId);
+
+        return Optional.of(event);
     }
 }

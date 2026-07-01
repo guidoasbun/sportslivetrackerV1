@@ -21,13 +21,15 @@ public class PollingService {
     private final KinesisService kinesisService;
     private final AppProperties props;
     private final SeasonFilterService seasonFilterService;
+    private final MockDataService mockDataService;
 
     public PollingService(ApiSportsClient apiSportsClient, KinesisService kinesisService, AppProperties props,
-                          SeasonFilterService seasonFilterService) {
+                          SeasonFilterService seasonFilterService, MockDataService mockDataService) {
         this.apiSportsClient = apiSportsClient;
         this.kinesisService = kinesisService;
         this.props = props;
         this.seasonFilterService = seasonFilterService;
+        this.mockDataService = mockDataService;
     }
 
     @Scheduled(fixedDelayString = "${app.api.sports.poll-interval-ms}")
@@ -40,7 +42,7 @@ public class PollingService {
             try {
                 Optional<SportEvent> event;
                 if (props.getApi().getSports().isMockMode()) {
-                    event = generateMockEvent(sportType);
+                    event = mockDataService.generateEvent(sportType);
                 } else {
                     event = apiSportsClient.fetchLatestEvent(sportType);
                 }
@@ -58,37 +60,4 @@ public class PollingService {
         }
     }
 
-    private Optional<SportEvent> generateMockEvent(SportType sportType) {
-        SportEvent event = new SportEvent();
-        event.setEventId(java.util.UUID.randomUUID().toString());
-        event.setSportType(sportType);
-        event.setEventTimestamp(System.currentTimeMillis());
-        event.setRawPayload("{ \"mock\": true }");
-
-        java.util.Map<String, String> participants = new java.util.HashMap<>();
-        
-        switch (sportType) {
-            case SOCCER:
-                event.setAction("GOAL");
-                participants.put("scorer", "Mock Player");
-                participants.put("team", "Mock Team FC");
-                break;
-            case BASKETBALL:
-                event.setAction("3_POINTER");
-                participants.put("player", "Mock Shooter");
-                participants.put("team", "Mock City Hoops");
-                break;
-            case FOOTBALL:
-                event.setAction("TOUCHDOWN");
-                participants.put("player", "Mock Quarterback");
-                participants.put("team", "Mock City Eagles");
-                break;
-            default:
-                event.setAction("SCORE");
-                participants.put("player", "Mock Athlete");
-                break;
-        }
-        event.setParticipants(participants);
-        return Optional.of(event);
-    }
 }

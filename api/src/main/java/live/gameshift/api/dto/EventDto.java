@@ -10,5 +10,6 @@ public record EventDto(
         SportType sportType,
         String action,
         Map<String, String> participants,
-        Long eventTimestamp
+        Long eventTimestamp,
+        String fixtureId
 ) {}

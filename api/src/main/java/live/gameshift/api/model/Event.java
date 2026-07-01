@@ -17,6 +17,7 @@ public class Event {
     private Map<String, String> participants;
     private String rawPayload;
     private Long eventTimestamp;
+    private String fixtureId;
 
     public Event() {
     }
@@ -68,5 +69,12 @@ public class Event {
     }
     public void setRawPayload(String rawPayload) {
         this.rawPayload = rawPayload;
+    }
+
+    public String getFixtureId() {
+        return fixtureId;
+    }
+    public void setFixtureId(String fixtureId) {
+        this.fixtureId = fixtureId;
     }
 }

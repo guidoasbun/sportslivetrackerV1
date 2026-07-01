@@ -6,6 +6,7 @@ import live.gameshift.api.model.enums.SportType;
 import live.gameshift.api.repository.EventRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -21,13 +22,16 @@ public class EventService {
     private static final Logger log = LoggerFactory.getLogger(EventService.class);
     private final EventRepository eventRepository;
     private final SseEmitterService sseEmitterService;
+    private final boolean mockMode;
     
     private volatile Long lastPollTime;
     private volatile Set<String> processedIdsAtLastPollTime = new HashSet<>();
 
-    public EventService(EventRepository eventRepository, SseEmitterService sseEmitterService) {
+    public EventService(EventRepository eventRepository, SseEmitterService sseEmitterService,
+                        @Value("${app.mock-mode:false}") boolean mockMode) {
         this.eventRepository = eventRepository;
         this.sseEmitterService = sseEmitterService;
+        this.mockMode = mockMode;
         // Start polling from the exact moment the server starts
         this.lastPollTime = Instant.now().toEpochMilli();
     }
@@ -36,6 +40,10 @@ public class EventService {
     // preventing overlap if DynamoDB queries are slow
     @Scheduled(fixedDelay = 5000)
     public synchronized void pollForNewEvents() {
+        // In mock mode, MockEventGenerator broadcasts events directly — skip DynamoDB polling
+        if (mockMode) {
+            return;
+        }
         Long newMaxTime = lastPollTime;
         Set<String> newMaxIds = new HashSet<>();
         
@@ -63,7 +71,8 @@ public class EventService {
                         event.getSportType(),
                         event.getAction(),
                         event.getParticipants(),
-                        event.getEventTimestamp()
+                        event.getEventTimestamp(),
+                        event.getFixtureId()
                 );
                 
                 log.info("Broadcasting new event: {} - {}", sportType, event.getAction());
