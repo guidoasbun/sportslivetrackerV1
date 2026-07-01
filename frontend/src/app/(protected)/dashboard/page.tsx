@@ -1,15 +1,35 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import OffsetSlider from '@/components/dashboard/OffsetSlider';
 import EventFeed from '@/components/dashboard/EventFeed';
 import CommentaryPanel from '@/components/dashboard/CommentaryPanel';
 import { useEventBuffer } from '@/lib/useEventBuffer';
+import { API_BASE_URL } from '@/lib/constants';
 
 const SPORTS = ['SOCCER', 'FOOTBALL', 'BASKETBALL', 'BASEBALL', 'HOCKEY', 'FORMULA_1'];
 
 export default function DashboardPage() {
     const [selectedSport, setSelectedSport] = useState<string>('SOCCER');
+    const [activeSports, setActiveSports] = useState<string[]>(SPORTS);
+
+    useEffect(() => {
+        async function fetchActiveSports() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/sports/active`);
+                if (!response.ok) return;
+                const data: string[] = await response.json();
+                if (Array.isArray(data) && data.length > 0) {
+                    setActiveSports(data);
+                    // If the currently selected sport is no longer active, reset to first active
+                    setSelectedSport(prev => data.includes(prev) ? prev : data[0]);
+                }
+            } catch {
+                // On failure, keep default (all sports) — graceful degradation
+            }
+        }
+        fetchActiveSports();
+    }, []);
 
     // Start at 0 seconds delay (real-time)
     const [offsetSeconds, setOffsetSeconds] = useState<number>(0);
@@ -36,7 +56,7 @@ export default function DashboardPage() {
                 border: '1px solid rgba(255,255,255,0.05)'
             }}>
                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                    {SPORTS.map(sport => (
+                    {activeSports.map(sport => (
                         <button
                             key={sport}
                             onClick={() => setSelectedSport(sport)}

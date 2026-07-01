@@ -20,16 +20,23 @@ public class PollingService {
     private final ApiSportsClient apiSportsClient;
     private final KinesisService kinesisService;
     private final AppProperties props;
+    private final SeasonFilterService seasonFilterService;
 
-    public PollingService(ApiSportsClient apiSportsClient, KinesisService kinesisService, AppProperties props) {
+    public PollingService(ApiSportsClient apiSportsClient, KinesisService kinesisService, AppProperties props,
+                          SeasonFilterService seasonFilterService) {
         this.apiSportsClient = apiSportsClient;
         this.kinesisService = kinesisService;
         this.props = props;
+        this.seasonFilterService = seasonFilterService;
     }
 
     @Scheduled(fixedDelayString = "${app.api.sports.poll-interval-ms}")
     public void poll() {
         for (SportType sportType : props.getApi().getSports().getConfigs().keySet()) {
+            if (!seasonFilterService.isActive(sportType)) {
+                log.debug("Sport {} is not in-season, skipping", sportType);
+                continue;
+            }
             try {
                 Optional<SportEvent> event;
                 if (props.getApi().getSports().isMockMode()) {
