@@ -74,7 +74,7 @@ export default function DashboardPage() {
                     }}
                 >
                     <span>
-                        ⚠️ Connection lost. Reconnecting... (attempt {reconnectionState.attempt} of 10)
+                        ⚠️ Connection lost. Reconnecting... (attempt {reconnectionState.attempt})
                     </span>
                 </div>
             )}
@@ -97,7 +97,7 @@ export default function DashboardPage() {
                     }}
                 >
                     <span>
-                        ❌ Unable to connect to live event stream after 10 attempts.
+                        ❌ Unable to connect to live event stream after {reconnectionState.attempt} attempts.
                     </span>
                     <button
                         onClick={reconnect}

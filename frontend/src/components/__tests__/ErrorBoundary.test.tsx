@@ -44,20 +44,30 @@ describe("ErrorBoundary", () => {
   });
 
   it("calls window.location.reload when the Retry button is clicked", () => {
+    const originalLocation = window.location;
     const reloadMock = vi.fn();
     Object.defineProperty(window, "location", {
-      value: { reload: reloadMock },
+      value: { ...originalLocation, reload: reloadMock },
       writable: true,
+      configurable: true,
     });
 
-    render(
-      <ErrorBoundary>
-        <ThrowingComponent error={new Error("Crash")} />
-      </ErrorBoundary>
-    );
+    try {
+      render(
+        <ErrorBoundary>
+          <ThrowingComponent error={new Error("Crash")} />
+        </ErrorBoundary>
+      );
 
-    fireEvent.click(screen.getByRole("button", { name: /retry/i }));
-    expect(reloadMock).toHaveBeenCalledTimes(1);
+      fireEvent.click(screen.getByRole("button", { name: /retry/i }));
+      expect(reloadMock).toHaveBeenCalledTimes(1);
+    } finally {
+      Object.defineProperty(window, "location", {
+        value: originalLocation,
+        writable: true,
+        configurable: true,
+      });
+    }
   });
 
   it("shows a generic message when error has no message", () => {
