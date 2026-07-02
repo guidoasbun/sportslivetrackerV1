@@ -12,7 +12,7 @@ terraform {
     bucket         = "sports-tracker-terraform-state"
     key            = "terraform.tfstate"
     region         = "us-east-1"
-    dynamodb_table = "sports-tracker-terraform-locks"
+    use_lockfile   = true
     encrypt        = true
   }
 }
