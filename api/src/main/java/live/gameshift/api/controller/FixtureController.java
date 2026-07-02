@@ -1,25 +1,26 @@
 package live.gameshift.api.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import live.gameshift.api.dto.FixtureDto;
-import live.gameshift.api.model.Event;
 import live.gameshift.api.model.enums.SportType;
-import live.gameshift.api.repository.EventRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import java.time.Duration;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
- * Exposes fixture information derived from recent events.
- * In mock mode, returns simulated fixtures instead of querying DynamoDB.
+ * Exposes live fixture information by querying API-Sports directly.
+ * In mock mode, returns simulated fixtures for local development.
  */
 @RestController
 @RequestMapping("/api/fixtures")
@@ -27,15 +28,32 @@ public class FixtureController {
 
     private static final Logger log = LoggerFactory.getLogger(FixtureController.class);
 
-    private final EventRepository eventRepository;
     private final boolean mockMode;
+    private final ObjectMapper objectMapper;
+    private final Map<SportType, String> sportBaseUrls;
+    private final String apiSportsKey;
 
-    public FixtureController(EventRepository eventRepository,
-                             @Value("${app.mock-mode:false}") boolean mockMode) {
-        this.eventRepository = eventRepository;
+    public FixtureController(@Value("${app.mock-mode:false}") boolean mockMode,
+                             @Value("${API_SPORTS_KEY:}") String apiSportsKey,
+                             ObjectMapper objectMapper) {
         this.mockMode = mockMode;
+        this.objectMapper = objectMapper;
+        this.apiSportsKey = apiSportsKey;
+
+        // Map sport types to their API-Sports base URLs
+        this.sportBaseUrls = Map.of(
+            SportType.SOCCER, "https://v3.football.api-sports.io",
+            SportType.BASKETBALL, "https://v1.basketball.api-sports.io",
+            SportType.FOOTBALL, "https://v1.american-football.api-sports.io",
+            SportType.BASEBALL, "https://v1.baseball.api-sports.io",
+            SportType.HOCKEY, "https://v1.hockey.api-sports.io",
+            SportType.FORMULA_1, "https://v1.formula-1.api-sports.io"
+        );
+
         if (mockMode) {
             log.info("[MOCK] FixtureController running in mock mode — returning simulated fixtures");
+        } else {
+            log.info("FixtureController configured to query API-Sports directly for live fixtures");
         }
     }
 
@@ -45,49 +63,85 @@ public class FixtureController {
             return getMockFixtures(sport);
         }
 
-        // Production: query events from the last 24 hours to capture live + upcoming fixtures
-        long sinceEpochMillis = Instant.now().minus(24, ChronoUnit.HOURS).toEpochMilli();
-
-        List<Event> recentEvents = eventRepository.findRecentEvents(sport, sinceEpochMillis);
-
-        if (recentEvents.isEmpty()) {
+        if (apiSportsKey == null || apiSportsKey.isBlank()) {
+            log.warn("API_SPORTS_KEY not configured — cannot fetch live fixtures");
             return Collections.emptyList();
         }
 
-        // Filter out events with null fixtureId (legacy events before fixture feature)
-        Map<String, List<Event>> eventsByFixture = recentEvents.stream()
-                .filter(event -> event.getFixtureId() != null)
-                .collect(Collectors.groupingBy(Event::getFixtureId));
-
-        if (eventsByFixture.isEmpty()) {
+        String baseUrl = sportBaseUrls.get(sport);
+        if (baseUrl == null) {
+            log.warn("No API-Sports base URL configured for sport: {}", sport);
             return Collections.emptyList();
         }
 
-        // For each fixture group: take the latest action/status and earliest timestamp as startTime
-        return eventsByFixture.entrySet().stream()
-                .map(entry -> {
-                    String fixtureId = entry.getKey();
-                    List<Event> fixtureEvents = entry.getValue();
+        try {
+            SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+            requestFactory.setConnectTimeout(Duration.ofSeconds(10));
+            requestFactory.setReadTimeout(Duration.ofSeconds(10));
 
-                    Event latestEvent = fixtureEvents.stream()
-                            .max(Comparator.comparingLong(Event::getEventTimestamp))
-                            .orElseThrow();
+            RestClient client = RestClient.builder()
+                    .requestFactory(requestFactory)
+                    .baseUrl(baseUrl)
+                    .defaultHeader("x-apisports-key", apiSportsKey)
+                    .build();
 
-                    Long startTime = fixtureEvents.stream()
-                            .map(Event::getEventTimestamp)
-                            .min(Long::compareTo)
-                            .orElseThrow();
+            // Fetch live fixtures
+            String response = client.get()
+                    .uri("/fixtures?live=all")
+                    .retrieve()
+                    .body(String.class);
 
-                    return new FixtureDto(
+            return parseFixturesResponse(response, sport);
+        } catch (RestClientException e) {
+            log.error("Failed to fetch fixtures from API-Sports for sport={}: {}", sport, e.getMessage());
+            return Collections.emptyList();
+        }
+    }
+
+    private List<FixtureDto> parseFixturesResponse(String response, SportType sport) {
+        if (response == null || response.isBlank()) {
+            return Collections.emptyList();
+        }
+
+        try {
+            JsonNode root = objectMapper.readTree(response);
+            JsonNode fixtures = root.path("response");
+
+            if (!fixtures.isArray() || fixtures.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            List<FixtureDto> result = new ArrayList<>();
+            for (JsonNode fixture : fixtures) {
+                try {
+                    String fixtureId = String.valueOf(fixture.path("fixture").path("id").asLong());
+                    String statusText = fixture.path("fixture").path("status").path("long").asText("Unknown");
+                    int elapsed = fixture.path("fixture").path("status").path("elapsed").asInt(0);
+                    long timestamp = fixture.path("fixture").path("timestamp").asLong(0) * 1000; // to millis
+
+                    String home = fixture.path("teams").path("home").path("name").asText("TBD");
+                    String away = fixture.path("teams").path("away").path("name").asText("TBD");
+
+                    String status = elapsed > 0 ? statusText + " - " + elapsed + "'" : statusText;
+
+                    result.add(new FixtureDto(
                             fixtureId,
                             sport,
-                            latestEvent.getParticipants(),
-                            latestEvent.getAction(),
-                            startTime
-                    );
-                })
-                .sorted(Comparator.comparingLong(FixtureDto::startTime))
-                .toList();
+                            Map.of("home", home, "away", away),
+                            status,
+                            timestamp
+                    ));
+                } catch (Exception e) {
+                    log.debug("Failed to parse fixture entry: {}", e.getMessage());
+                }
+            }
+
+            result.sort(Comparator.comparingLong(FixtureDto::startTime));
+            return result;
+        } catch (Exception e) {
+            log.error("Failed to parse API-Sports fixtures response: {}", e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
     /**
