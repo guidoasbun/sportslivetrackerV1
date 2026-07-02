@@ -294,6 +294,10 @@ resource "aws_ecs_task_definition" "api" {
       { name = "SUMMARIES_TABLE_NAME", value = var.summaries_table_name },
     ]
 
+    secrets = [
+      { name = "API_SPORTS_KEY", valueFrom = var.api_sports_key_arn }
+    ]
+
     logConfiguration = {
       logDriver = "awslogs"
       options = {
