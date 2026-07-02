@@ -21,6 +21,15 @@ public class SecretsService {
             return;
         }
 
+        // First, check if the key was injected as an environment variable by ECS
+        String envKey = System.getenv("API_SPORTS_KEY");
+        if (envKey != null && !envKey.isBlank()) {
+            this.apiSportsKey = envKey;
+            log.info("Using API-Sports key from environment variable (injected by ECS)");
+            return;
+        }
+
+        // Fallback: fetch from Secrets Manager directly (local development)
         String secretArn = props.getAws().getSecrets().getApiSportsKeyArn();
         log.info("Fetching API-Sports key from Secrets Manager: {}", secretArn);
 
