@@ -45,13 +45,26 @@ export default function FixtureList({ sport, selectedFixtureId, onSelectFixture 
 
     function getStatusIndicator(status: string) {
         const normalized = status.toLowerCase();
-        if (normalized === 'live' || normalized === 'in_progress') {
+        if (normalized === 'live' || normalized === 'in_progress' ||
+            normalized.includes('half') || normalized.includes('quarter') ||
+            normalized.includes('period') || normalized.includes('inning') ||
+            normalized.includes('lap') || normalized.includes('live') ||
+            normalized.includes('1h') || normalized.includes('2h') ||
+            normalized.includes('et') || normalized.includes('penalty') ||
+            normalized.includes('break')) {
             return { color: '#10b981', label: 'Live', bgColor: 'rgba(16, 185, 129, 0.15)' };
         }
-        if (normalized === 'scheduled' || normalized === 'upcoming') {
+        if (normalized === 'scheduled' || normalized === 'upcoming' ||
+            normalized.includes('not started') || normalized.includes('tbd')) {
             return { color: '#f59e0b', label: 'Scheduled', bgColor: 'rgba(245, 158, 11, 0.15)' };
         }
-        return { color: '#6b7280', label: 'Finished', bgColor: 'rgba(107, 114, 128, 0.15)' };
+        if (normalized.includes('finished') || normalized.includes('full') ||
+            normalized.includes('after') || normalized.includes('aet') ||
+            normalized.includes('pen') || normalized === 'ft') {
+            return { color: '#6b7280', label: 'Finished', bgColor: 'rgba(107, 114, 128, 0.15)' };
+        }
+        // Default: treat unknown statuses as live (they likely are if API-Sports returns them)
+        return { color: '#10b981', label: 'Live', bgColor: 'rgba(16, 185, 129, 0.15)' };
     }
 
     function formatStartTime(timestamp: number) {
@@ -190,7 +203,7 @@ export default function FixtureList({ sport, selectedFixtureId, onSelectFixture 
                                     borderRadius: '50%',
                                     background: statusInfo.color
                                 }} />
-                                {statusInfo.label}
+                                {statusInfo.label === 'Live' ? fixture.status : statusInfo.label}
                             </span>
                             <span style={{ color: '#94a3b8', fontSize: '12px' }}>
                                 {formatStartTime(fixture.startTime)}
