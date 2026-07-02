@@ -84,7 +84,7 @@ resource "aws_iam_role_policy" "producer_kinesis" {
     Version = "2012-10-17"
     Statement = [{
       Effect   = "Allow"
-      Action   = "kinesis:PutRecord"
+      Action   = ["kinesis:PutRecord", "kinesis:DescribeStream"]
       Resource = var.kinesis_stream_arn
     }]
   })
