@@ -121,6 +121,7 @@ resource "aws_ecs_task_definition" "producer" {
       { name = "KINESIS_STREAM_NAME", value = var.kinesis_stream_name },
       { name = "AWS_REGION", value = data.aws_region.current.name },
       { name = "APP_API_SPORTS_MOCK_MODE", value = "false" },
+      { name = "APP_API_SERVICE_URL", value = "https://dev.gameshift.live" },
     ]
 
     secrets = [
