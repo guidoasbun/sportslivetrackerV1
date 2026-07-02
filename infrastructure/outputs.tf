@@ -67,3 +67,8 @@ output "kinesis_stream_name" {
   description = "Kinesis stream name — useful for manual testing and monitoring"
   value       = module.kinesis.stream_name
 }
+
+output "monitoring_sns_topic_arn" {
+  description = "SNS topic ARN for CloudWatch alarm notifications — use for subscription configuration"
+  value       = module.monitoring.sns_topic_arn
+}

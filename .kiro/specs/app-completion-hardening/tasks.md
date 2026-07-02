@@ -280,8 +280,8 @@ This plan implements the remaining 20% of GameShift Live — completing auth flo
     - After 10 failures: show persistent error + manual "Reconnect" button that resets counter
     - _Requirements: 11.3, 11.4_
 
-- [ ] 12. CloudWatch monitoring Terraform module
-  - [ ] 12.1 Create `infrastructure/modules/monitoring/main.tf`
+- [x] 12. CloudWatch monitoring Terraform module
+  - [x] 12.1 Create `infrastructure/modules/monitoring/main.tf`
     - `aws_sns_topic` for alarm notifications
     - Lambda error rate alarm: Errors/Invocations > 5%, 5-min period, 1 datapoint
     - ECS RunningTaskCount == 0 alarm for producer, api, frontend (1-min period, 2 datapoints)
@@ -289,7 +289,7 @@ This plan implements the remaining 20% of GameShift Live — completing auth flo
     - CloudWatch dashboard: Lambda metrics, ECS CPU/memory, Kinesis IncomingRecords, DynamoDB capacity
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5_
 
-  - [ ] 12.2 Wire monitoring module into `infrastructure/main.tf`
+  - [x] 12.2 Wire monitoring module into `infrastructure/main.tf`
     - Add `module "monitoring"` block with required variables (Lambda function name, ECS cluster/service names, Kinesis stream name)
     - Pass SNS topic ARN as output for subscription configuration
     - _Requirements: 9.4_
