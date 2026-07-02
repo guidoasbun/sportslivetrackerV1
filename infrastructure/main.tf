@@ -104,3 +104,19 @@ module "cognito" {
   google_client_secret_arn = var.cognito_google_client_secret_arn
   allow_localhost          = var.allow_localhost
 }
+
+module "monitoring" {
+  source = "./modules/monitoring"
+
+  project_name                  = var.project_name
+  environment                   = var.environment
+  aws_region                    = var.aws_region
+  lambda_function_name          = module.lambda.function_name
+  ecs_cluster_name              = module.ecs.cluster_name
+  ecs_producer_service_name     = module.ecs.producer_service_name
+  ecs_api_service_name          = module.ecs.api_service_name
+  ecs_frontend_service_name     = module.ecs.frontend_service_name
+  kinesis_stream_name           = module.kinesis.stream_name
+  dynamodb_events_table_name    = module.dynamodb.events_table_name
+  dynamodb_summaries_table_name = module.dynamodb.summaries_table_name
+}
