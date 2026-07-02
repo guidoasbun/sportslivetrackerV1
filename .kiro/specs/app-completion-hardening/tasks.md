@@ -294,8 +294,8 @@ This plan implements the remaining 20% of GameShift Live — completing auth flo
     - Pass SNS topic ARN as output for subscription configuration
     - _Requirements: 9.4_
 
-- [ ] 13. CI/CD pipeline hardening
-  - [ ] 13.1 Restructure `deploy.yml` with test gates
+- [x] 13. CI/CD pipeline hardening
+  - [x] 13.1 Restructure `deploy.yml` with test gates
     - Add `test` job: run `mvn test` for lambda, api, producer; `npm run test` for frontend
     - Add `plan` job: run `terraform plan -var-file=dev.tfvars`, output to workflow summary
     - Make `build-deploy` job depend on `test` job via `needs: [test]`
