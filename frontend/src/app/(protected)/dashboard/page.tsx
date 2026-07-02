@@ -16,6 +16,7 @@ export default function DashboardPage() {
     const [selectedSport, setSelectedSport] = useState<string>('SOCCER');
     const [selectedFixtureId, setSelectedFixtureId] = useState<string | null>(null);
     const [activeSports, setActiveSports] = useState<string[]>(SPORTS);
+    const [liveSports, setLiveSports] = useState<string[]>([]);
 
     useEffect(() => {
         async function fetchActiveSports() {
@@ -23,6 +24,7 @@ export default function DashboardPage() {
                 const response = await fetch(`${API_BASE_URL}/sports/active`);
                 if (!response.ok) return;
                 const data: string[] = await response.json();
+                setLiveSports(data);
                 if (Array.isArray(data) && data.length > 0) {
                     setActiveSports(data);
                     // If the currently selected sport is no longer active, reset to first active
@@ -131,25 +133,38 @@ export default function DashboardPage() {
                 border: '1px solid rgba(255,255,255,0.05)'
             }}>
                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                    {activeSports.map(sport => (
-                        <button
-                            key={sport}
-                            onClick={() => setSelectedSport(sport)}
-                            style={{
-                                padding: '10px 20px',
-                                borderRadius: '24px',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                background: selectedSport === sport ? 'linear-gradient(90deg, #00b4db, #0083b0)' : 'transparent',
-                                color: 'white',
-                                fontWeight: selectedSport === sport ? 'bold' : 'normal',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease',
-                                boxShadow: selectedSport === sport ? '0 4px 12px rgba(0, 180, 219, 0.3)' : 'none'
-                            }}
-                        >
-                            {sport}
-                        </button>
-                    ))}
+                    {SPORTS.map(sport => {
+                        const isSelected = selectedSport === sport;
+                        const isLive = liveSports.includes(sport);
+                        return (
+                            <button
+                                key={sport}
+                                onClick={() => setSelectedSport(sport)}
+                                style={{
+                                    padding: '10px 20px',
+                                    borderRadius: '24px',
+                                    border: isSelected
+                                        ? '2px solid transparent'
+                                        : isLive
+                                            ? '2px solid #10b981'
+                                            : '1px solid rgba(255,255,255,0.1)',
+                                    background: isSelected ? 'linear-gradient(90deg, #00b4db, #0083b0)' : 'transparent',
+                                    color: 'white',
+                                    fontWeight: isSelected ? 'bold' : 'normal',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease',
+                                    boxShadow: isSelected
+                                        ? '0 4px 12px rgba(0, 180, 219, 0.3)'
+                                        : isLive
+                                            ? '0 0 8px rgba(16, 185, 129, 0.3)'
+                                            : 'none',
+                                    opacity: isLive || isSelected ? 1 : 0.5
+                                }}
+                            >
+                                {sport}
+                            </button>
+                        );
+                    })}
                 </div>
 
                 <OffsetSlider offsetSeconds={offsetSeconds} onChange={setOffsetSeconds} />
