@@ -65,6 +65,7 @@ public class SportEventHandler implements RequestHandler<KinesisEvent, Void> {
                 event.setParticipants(sportEvent.getParticipants());
                 event.setRawPayload(sportEvent.getRawPayload());
                 event.setEventTimestamp(sportEvent.getEventTimestamp());
+                event.setFixtureId(sportEvent.getFixtureId());
                 // TTL: auto-delete after 7 days (DynamoDB TTL uses epoch seconds)
                 event.setTtl(System.currentTimeMillis() / 1000 + (7 * 24 * 60 * 60));
 

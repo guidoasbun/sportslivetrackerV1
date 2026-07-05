@@ -16,6 +16,7 @@ public class Event {
     private String rawPayload;
     private Long eventTimestamp;
     private Long ttl;
+    private String fixtureId;
 
     public Event() {
     }
@@ -75,5 +76,13 @@ public class Event {
 
     public void setTtl(Long ttl) {
         this.ttl = ttl;
+    }
+
+    public String getFixtureId() {
+        return fixtureId;
+    }
+
+    public void setFixtureId(String fixtureId) {
+        this.fixtureId = fixtureId;
     }
 }
