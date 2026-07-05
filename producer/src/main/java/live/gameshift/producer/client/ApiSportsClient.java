@@ -77,8 +77,10 @@ public class ApiSportsClient {
         try {
             // Use the provided fixtureId if available, otherwise fall back to config
             String id = (fixtureId != null && !fixtureId.isBlank()) ? fixtureId : config.getFixtureId();
+            // When querying a specific fixture by ID, don't add &live=all filter
+            // as API-Sports may not include it in the live set immediately
             String response = client.get()
-                    .uri("/fixtures?id={id}&live=all", id)
+                    .uri("/fixtures?id={id}", id)
                     .retrieve()
                     .body(String.class);
 
