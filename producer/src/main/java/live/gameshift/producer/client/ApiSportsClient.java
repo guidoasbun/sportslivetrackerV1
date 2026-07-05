@@ -54,6 +54,10 @@ public class ApiSportsClient {
     }
 
     public Optional<SportEvent> fetchLatestEvent(SportType sportType) throws Exception {
+        return fetchLatestEvent(sportType, null);
+    }
+
+    public Optional<SportEvent> fetchLatestEvent(SportType sportType, String fixtureId) throws Exception {
         // Rate limit check: skip if sport is paused
         Instant pauseExpiry = pausedUntil.get(sportType);
         if (pauseExpiry != null && Instant.now().isBefore(pauseExpiry)) {
@@ -71,8 +75,10 @@ public class ApiSportsClient {
         }
 
         try {
+            // Use the provided fixtureId if available, otherwise fall back to config
+            String id = (fixtureId != null && !fixtureId.isBlank()) ? fixtureId : config.getFixtureId();
             String response = client.get()
-                    .uri("/fixtures?id={id}&live=all", config.getFixtureId())
+                    .uri("/fixtures?id={id}&live=all", id)
                     .retrieve()
                     .body(String.class);
 

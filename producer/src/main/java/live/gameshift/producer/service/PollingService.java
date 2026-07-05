@@ -59,7 +59,9 @@ public class PollingService {
                 if (props.getApi().getSports().isMockMode()) {
                     event = mockDataService.generateEvent(sportType);
                 } else {
-                    event = apiSportsClient.fetchLatestEvent(sportType);
+                    // Get the fixture ID from active subscriptions for this sport
+                    String fixtureId = pollingController.getFixtureIdForSport(sportType);
+                    event = apiSportsClient.fetchLatestEvent(sportType, fixtureId);
                 }
                 
                 if (event.isEmpty()) {

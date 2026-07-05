@@ -42,6 +42,11 @@ public class PollingController {
      */
     private volatile boolean allSportsActive = false;
 
+    /**
+     * The fixture ID from the "ALL" sport type subscription, if any.
+     */
+    private volatile String allSportsFixtureId = null;
+
     public PollingController(
             @Value("${app.api.service.url}") String apiServiceUrl,
             ObjectMapper objectMapper) {
@@ -81,11 +86,13 @@ public class PollingController {
 
             Set<ActiveSubscription> newActive = ConcurrentHashMap.newKeySet();
             boolean hasAllSport = false;
+            String allFixtureId = null;
             for (ActiveSubscriptionDto dto : dtos) {
                 if ("ALL".equals(dto.sportType())) {
                     // "ALL" is a wildcard — subscriber connected without specifying a sport.
                     // Treat this as all sports being active.
                     hasAllSport = true;
+                    allFixtureId = dto.fixtureId();
                     continue;
                 }
                 try {
@@ -97,6 +104,7 @@ public class PollingController {
             }
 
             allSportsActive = hasAllSport;
+            allSportsFixtureId = allFixtureId;
             activeSubscriptions = Collections.unmodifiableSet(newActive);
             log.debug("Refreshed active subscriptions: {} sport/fixture combinations, allSportsActive={}",
                     newActive.size(), hasAllSport);
@@ -131,6 +139,27 @@ public class PollingController {
      */
     public boolean isFixtureActive(SportType sportType, String fixtureId) {
         return activeSubscriptions.contains(new ActiveSubscription(sportType, fixtureId));
+    }
+
+    /**
+     * Returns the fixture ID for the first active subscription matching the given sport type.
+     * Also checks "ALL" subscriptions which don't specify a sport.
+     * Returns null if no specific fixture is subscribed (fallback to config fixture ID).
+     */
+    public String getFixtureIdForSport(SportType sportType) {
+        // First check sport-specific subscriptions
+        String fixtureId = activeSubscriptions.stream()
+                .filter(sub -> sub.sportType() == sportType)
+                .map(ActiveSubscription::fixtureId)
+                .findFirst()
+                .orElse(null);
+
+        if (fixtureId != null) {
+            return fixtureId;
+        }
+
+        // Check "ALL" subscriptions stored in allSportsFixtureIds
+        return allSportsFixtureId;
     }
 
     /**
