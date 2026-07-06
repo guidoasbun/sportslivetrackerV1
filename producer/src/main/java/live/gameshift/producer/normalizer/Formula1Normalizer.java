@@ -41,11 +41,23 @@ public class Formula1Normalizer implements SportNormalizer {
         JsonNode fixtureIdNode = fixture.path("fixture").path("id");
         String fixtureId = fixtureIdNode.isMissingNode() || fixtureIdNode.isNull() ? null : fixtureIdNode.asText();
 
+        // F1 API structure differs — teams/drivers have logo fields at different paths
+        String driver = fixture.path("teams").path("home").path("name").asText("Unknown");
+        String team = fixture.path("teams").path("away").path("name").asText("Unknown");
+        String driverLogo = fixture.path("teams").path("home").path("logo").asText("");
+        String teamLogo = fixture.path("teams").path("away").path("logo").asText("");
+
+        Map<String, String> participants = new java.util.LinkedHashMap<>();
+        participants.put("driver", driver);
+        participants.put("team", team);
+        if (!driverLogo.isBlank()) participants.put("driverLogo", driverLogo);
+        if (!teamLogo.isBlank()) participants.put("teamLogo", teamLogo);
+
         SportEvent event = new SportEvent(
                 UUID.randomUUID().toString(),
                 SportType.FORMULA_1,
                 "NS",
-                Map.of("driver", "Unknown", "team", "Unknown"),
+                participants,
                 json
         );
         event.setFixtureId(fixtureId);

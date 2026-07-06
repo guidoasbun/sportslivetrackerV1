@@ -59,8 +59,9 @@ public class TtsService {
                     .text(text)
                     .build();
 
-            ResponseInputStream<SynthesizeSpeechResponse> response = pollyClient.synthesizeSpeech(request);
-            return response.readAllBytes();
+            try (ResponseInputStream<SynthesizeSpeechResponse> response = pollyClient.synthesizeSpeech(request)) {
+                return response.readAllBytes();
+            }
         } catch (PollyException e) {
             log.error("Polly service error during speech synthesis: {}", e.getMessage(), e);
             throw new TtsSynthesisException("Speech synthesis is temporarily unavailable", e);

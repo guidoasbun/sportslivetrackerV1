@@ -43,10 +43,22 @@ export default function EventFeed({ events }: EventFeedProps) {
 
                     <div className="flex flex-wrap gap-2 mt-3">
 
-
+                        {/* Show team logos if available */}
+                        {(event.participants.homeLogo || event.participants.awayLogo) && (
+                            <div className="flex items-center gap-3 w-full mb-1">
+                                {event.participants.homeLogo && (
+                                    <img src={event.participants.homeLogo} alt={event.participants.home || 'Home'} className="w-6 h-6 object-contain" />
+                                )}
+                                {event.participants.awayLogo && (
+                                    <img src={event.participants.awayLogo} alt={event.participants.away || 'Away'} className="w-6 h-6 object-contain" />
+                                )}
+                            </div>
+                        )}
 
                         {/* The participants map is dynamic per sport. We loop over the keys and values here */}
-                        {Object.entries(event.participants).map(([role, name]) => (
+                        {Object.entries(event.participants)
+                            .filter(([role]) => !role.toLowerCase().includes('logo'))
+                            .map(([role, name]) => (
                             <div key={role} className="flex items-center text-sm bg-slate-900/50 px-3 py-1.5 rounded-lg border border-slate-700/50">
                                 <span className="text-slate-400 mr-2 capitalize">{role}:</span>
                                 <span className="text-slate-200 font-medium">{name}</span>

@@ -158,6 +158,8 @@ export default function FixtureList({ sport, selectedFixtureId, onSelectFixture 
                 const statusInfo = getStatusIndicator(fixture.status);
                 const home = fixture.participants?.home || 'TBD';
                 const away = fixture.participants?.away || 'TBD';
+                const homeLogo = fixture.participants?.homeLogo;
+                const awayLogo = fixture.participants?.awayLogo;
 
                 return (
                     <button
@@ -179,9 +181,13 @@ export default function FixtureList({ sport, selectedFixtureId, onSelectFixture 
                             boxShadow: isSelected ? '0 4px 12px rgba(0, 180, 219, 0.2)' : 'none'
                         }}
                     >
-                        {/* Participants */}
-                        <div style={{ color: 'white', fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>
-                            {`${home} vs ${away}`}
+                        {/* Participants with logos */}
+                        <div style={{ color: 'white', fontSize: '14px', fontWeight: 600, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            {homeLogo && <img src={homeLogo} alt={home} style={{ width: '20px', height: '20px', objectFit: 'contain' }} />}
+                            <span>{home}</span>
+                            <span style={{ color: '#64748b', margin: '0 2px' }}>vs</span>
+                            {awayLogo && <img src={awayLogo} alt={away} style={{ width: '20px', height: '20px', objectFit: 'contain' }} />}
+                            <span>{away}</span>
                         </div>
 
                         {/* Status and time */}
