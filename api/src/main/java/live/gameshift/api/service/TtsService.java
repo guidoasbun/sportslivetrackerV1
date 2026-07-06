@@ -1,6 +1,7 @@
 package live.gameshift.api.service;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -11,6 +12,7 @@ import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.services.polly.PollyClient;
 import software.amazon.awssdk.services.polly.model.Engine;
+import software.amazon.awssdk.services.polly.model.LanguageCode;
 import software.amazon.awssdk.services.polly.model.OutputFormat;
 import software.amazon.awssdk.services.polly.model.PollyException;
 import software.amazon.awssdk.services.polly.model.SynthesizeSpeechRequest;
@@ -23,9 +25,17 @@ public class TtsService {
 
     private static final Logger log = LoggerFactory.getLogger(TtsService.class);
 
-    private static final Set<String> SUPPORTED_VOICES = Set.of("Matthew", "Joanna", "Liam", "Ruth");
-    private static final String DEFAULT_VOICE = "Matthew";
+    private static final Set<String> SUPPORTED_VOICES = Set.of("Matthew", "Joanna", "Liam", "Ruth", "Sergio");
+    private static final String DEFAULT_VOICE = "Sergio";
     private static final int MAX_TEXT_LENGTH = 3000;
+
+    private static final Map<String, LanguageCode> VOICE_LANGUAGE_MAP = Map.of(
+            "Matthew", LanguageCode.EN_US,
+            "Joanna", LanguageCode.EN_US,
+            "Liam", LanguageCode.EN_US,
+            "Ruth", LanguageCode.EN_US,
+            "Sergio", LanguageCode.ES_ES
+    );
 
     private final PollyClient pollyClient;
 
@@ -45,17 +55,18 @@ public class TtsService {
         // Resolve and validate voiceId
         String resolvedVoiceId = voiceId == null ? DEFAULT_VOICE : voiceId;
         if (!SUPPORTED_VOICES.contains(resolvedVoiceId)) {
-            throw new IllegalArgumentException("Unsupported voice. Supported voices: Matthew, Joanna, Liam, Ruth");
+            throw new IllegalArgumentException("Unsupported voice. Supported voices: Matthew, Joanna, Liam, Ruth, Sergio");
         }
 
         // Build and execute the Polly synthesis request
         try {
             SynthesizeSpeechRequest request = SynthesizeSpeechRequest.builder()
-                    .engine(Engine.NEURAL)
+                    .engine(Engine.GENERATIVE)
                     .outputFormat(OutputFormat.MP3)
                     .sampleRate("24000")
                     .textType(TextType.TEXT)
                     .voiceId(VoiceId.fromValue(resolvedVoiceId))
+                    .languageCode(VOICE_LANGUAGE_MAP.getOrDefault(resolvedVoiceId, LanguageCode.EN_US))
                     .text(text)
                     .build();
 

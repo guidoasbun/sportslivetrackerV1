@@ -6,7 +6,6 @@ import { fetchEventSummary } from '@/lib/api';
 import { SportSummary } from '@/types/summary';
 import { useTtsPreference } from '@/lib/useTtsPreference';
 import { useAudioQueue } from '@/lib/useAudioQueue';
-import { API_BASE_URL } from '@/lib/constants';
 import TtsToggle from '@/components/dashboard/TtsToggle';
 import PlaybackControls from '@/components/dashboard/PlaybackControls';
 
@@ -72,9 +71,10 @@ export default function CommentaryPanel({ eventId }: CommentaryPanelProps) {
 
         (async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/tts/synthesize`, {
+                const response = await fetch('/api/tts/synthesize', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
                     body: JSON.stringify({ text: commentary }),
                     signal: AbortSignal.timeout(10000),
                 });
