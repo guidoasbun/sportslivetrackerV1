@@ -67,6 +67,12 @@
             <artifactId>dynamodb-enhanced</artifactId>
         </dependency>
 
+        <!-- AWS Polly SDK — text-to-speech synthesis for live commentary -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>polly</artifactId>
+        </dependency>
+
         <!-- Test dependencies: JUnit 5, Mockito, Spring MockMvc.
              scope=test means these JARs are NOT included in the final production build. -->
         <dependency>
