@@ -42,16 +42,24 @@ public class SoccerNormalizer implements SportNormalizer {
 
         String homeTeam = fixture.path("teams").path("home").path("name").asText("Unknown");
         String awayTeam = fixture.path("teams").path("away").path("name").asText("Unknown");
+        String homeLogo = fixture.path("teams").path("home").path("logo").asText("");
+        String awayLogo = fixture.path("teams").path("away").path("logo").asText("");
         String status = fixture.path("fixture").path("status").path("short").asText("NS");
 
         JsonNode fixtureIdNode = fixture.path("fixture").path("id");
         String fixtureId = fixtureIdNode.isMissingNode() || fixtureIdNode.isNull() ? null : fixtureIdNode.asText();
 
+        Map<String, String> participants = new java.util.LinkedHashMap<>();
+        participants.put("home", homeTeam);
+        participants.put("away", awayTeam);
+        if (!homeLogo.isBlank()) participants.put("homeLogo", homeLogo);
+        if (!awayLogo.isBlank()) participants.put("awayLogo", awayLogo);
+
         SportEvent event = new SportEvent(
                 UUID.randomUUID().toString(),
                 SportType.SOCCER,
                 status,
-                Map.of("home", homeTeam, "away", awayTeam),
+                participants,
                 json
         );
         event.setFixtureId(fixtureId);

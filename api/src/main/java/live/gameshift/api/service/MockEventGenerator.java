@@ -64,6 +64,8 @@ public class MockEventGenerator {
         Map<String, String> participants = new LinkedHashMap<>();
         participants.put("home", fixture.homeTeam);
         participants.put("away", fixture.awayTeam);
+        if (fixture.homeLogo != null) participants.put("homeLogo", fixture.homeLogo);
+        if (fixture.awayLogo != null) participants.put("awayLogo", fixture.awayLogo);
 
         String action = switch (fixture.sportType) {
             case SOCCER -> generateSoccerAction(fixture, participants);
@@ -242,21 +244,33 @@ public class MockEventGenerator {
 
     private void initializeFixtures() {
         // Match the fixture IDs from FixtureController mock data
-        fixtures.put("MOCK-S01", new FixtureState("MOCK-S01", SportType.SOCCER, "Manchester City", "Real Madrid"));
-        fixtures.put("MOCK-S02", new FixtureState("MOCK-S02", SportType.SOCCER, "Barcelona", "Bayern Munich"));
-        fixtures.put("MOCK-S03", new FixtureState("MOCK-S03", SportType.SOCCER, "Liverpool", "Inter Milan"));
+        // Using API-Sports CDN-style URLs for mock logos
+        fixtures.put("MOCK-S01", new FixtureState("MOCK-S01", SportType.SOCCER, "Manchester City", "Real Madrid",
+                "https://media.api-sports.io/football/teams/50.png", "https://media.api-sports.io/football/teams/541.png"));
+        fixtures.put("MOCK-S02", new FixtureState("MOCK-S02", SportType.SOCCER, "Barcelona", "Bayern Munich",
+                "https://media.api-sports.io/football/teams/529.png", "https://media.api-sports.io/football/teams/157.png"));
+        fixtures.put("MOCK-S03", new FixtureState("MOCK-S03", SportType.SOCCER, "Liverpool", "Inter Milan",
+                "https://media.api-sports.io/football/teams/40.png", "https://media.api-sports.io/football/teams/505.png"));
 
-        fixtures.put("MOCK-B01", new FixtureState("MOCK-B01", SportType.BASKETBALL, "Lakers", "Celtics"));
-        fixtures.put("MOCK-B02", new FixtureState("MOCK-B02", SportType.BASKETBALL, "Warriors", "Nuggets"));
+        fixtures.put("MOCK-B01", new FixtureState("MOCK-B01", SportType.BASKETBALL, "Lakers", "Celtics",
+                "https://media.api-sports.io/basketball/teams/145.png", "https://media.api-sports.io/basketball/teams/133.png"));
+        fixtures.put("MOCK-B02", new FixtureState("MOCK-B02", SportType.BASKETBALL, "Warriors", "Nuggets",
+                "https://media.api-sports.io/basketball/teams/143.png", "https://media.api-sports.io/basketball/teams/138.png"));
 
-        fixtures.put("MOCK-F01", new FixtureState("MOCK-F01", SportType.FOOTBALL, "Chiefs", "Eagles"));
-        fixtures.put("MOCK-F02", new FixtureState("MOCK-F02", SportType.FOOTBALL, "49ers", "Cowboys"));
+        fixtures.put("MOCK-F01", new FixtureState("MOCK-F01", SportType.FOOTBALL, "Chiefs", "Eagles",
+                "https://media.api-sports.io/american-football/teams/1.png", "https://media.api-sports.io/american-football/teams/2.png"));
+        fixtures.put("MOCK-F02", new FixtureState("MOCK-F02", SportType.FOOTBALL, "49ers", "Cowboys",
+                "https://media.api-sports.io/american-football/teams/3.png", "https://media.api-sports.io/american-football/teams/4.png"));
 
-        fixtures.put("MOCK-X01", new FixtureState("MOCK-X01", SportType.BASEBALL, "Yankees", "Dodgers"));
-        fixtures.put("MOCK-X02", new FixtureState("MOCK-X02", SportType.BASEBALL, "Astros", "Braves"));
+        fixtures.put("MOCK-X01", new FixtureState("MOCK-X01", SportType.BASEBALL, "Yankees", "Dodgers",
+                "https://media.api-sports.io/baseball/teams/1.png", "https://media.api-sports.io/baseball/teams/2.png"));
+        fixtures.put("MOCK-X02", new FixtureState("MOCK-X02", SportType.BASEBALL, "Astros", "Braves",
+                "https://media.api-sports.io/baseball/teams/3.png", "https://media.api-sports.io/baseball/teams/4.png"));
 
-        fixtures.put("MOCK-H01", new FixtureState("MOCK-H01", SportType.HOCKEY, "Oilers", "Panthers"));
-        fixtures.put("MOCK-H02", new FixtureState("MOCK-H02", SportType.HOCKEY, "Avalanche", "Rangers"));
+        fixtures.put("MOCK-H01", new FixtureState("MOCK-H01", SportType.HOCKEY, "Oilers", "Panthers",
+                "https://media.api-sports.io/hockey/teams/1.png", "https://media.api-sports.io/hockey/teams/2.png"));
+        fixtures.put("MOCK-H02", new FixtureState("MOCK-H02", SportType.HOCKEY, "Avalanche", "Rangers",
+                "https://media.api-sports.io/hockey/teams/3.png", "https://media.api-sports.io/hockey/teams/4.png"));
 
         fixtures.put("MOCK-R01", new FixtureState("MOCK-R01", SportType.FORMULA_1, "Monaco Grand Prix", "Race"));
         fixtures.put("MOCK-R02", new FixtureState("MOCK-R02", SportType.FORMULA_1, "Silverstone Grand Prix", "Race"));
@@ -267,15 +281,23 @@ public class MockEventGenerator {
         final SportType sportType;
         final String homeTeam;
         final String awayTeam;
+        final String homeLogo;
+        final String awayLogo;
         int homeScore = 0;
         int awayScore = 0;
         int gameMinute;
 
         FixtureState(String fixtureId, SportType sportType, String homeTeam, String awayTeam) {
+            this(fixtureId, sportType, homeTeam, awayTeam, null, null);
+        }
+
+        FixtureState(String fixtureId, SportType sportType, String homeTeam, String awayTeam, String homeLogo, String awayLogo) {
             this.fixtureId = fixtureId;
             this.sportType = sportType;
             this.homeTeam = homeTeam;
             this.awayTeam = awayTeam;
+            this.homeLogo = homeLogo;
+            this.awayLogo = awayLogo;
             this.gameMinute = ThreadLocalRandom.current().nextInt(5, 30);
         }
 
