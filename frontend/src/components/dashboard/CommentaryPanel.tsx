@@ -1,7 +1,14 @@
+"use client";
+
 // frontend/src/components/dashboard/CommentaryPanel.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { fetchEventSummary } from '@/lib/api';
 import { SportSummary } from '@/types/summary';
+import { useTtsPreference } from '@/lib/useTtsPreference';
+import { useAudioQueue } from '@/lib/useAudioQueue';
+import { API_BASE_URL } from '@/lib/constants';
+import TtsToggle from '@/components/dashboard/TtsToggle';
+import PlaybackControls from '@/components/dashboard/PlaybackControls';
 
 interface CommentaryPanelProps {
     eventId: string;
@@ -13,6 +20,12 @@ export default function CommentaryPanel({ eventId }: CommentaryPanelProps) {
     const [summary, setSummary] = useState<SportSummary | null>(null);
     const [isGenerating, setIsGenerating] = useState(true);
     const [gaveUp, setGaveUp] = useState(false);
+
+    const { enabled } = useTtsPreference();
+    const { enqueue, skip, stopAll, state } = useAudioQueue(enabled);
+
+    // Track which commentary texts have already been sent for synthesis
+    const synthesizedRef = useRef<Set<string>>(new Set());
 
     useEffect(() => {
         let interval: NodeJS.Timeout | undefined;
@@ -36,6 +49,7 @@ export default function CommentaryPanel({ eventId }: CommentaryPanelProps) {
         setSummary(null);
         setIsGenerating(true);
         setGaveUp(false);
+        synthesizedRef.current = new Set();
 
         checkSummary();
         interval = setInterval(checkSummary, 2500);
@@ -44,6 +58,43 @@ export default function CommentaryPanel({ eventId }: CommentaryPanelProps) {
             if (interval) clearInterval(interval);
         };
     }, [eventId]);
+
+    // TTS synthesis effect: when commentary arrives and TTS is enabled, synthesize
+    useEffect(() => {
+        const commentary = summary?.commentary;
+        if (!commentary || !enabled) return;
+
+        // Don't re-synthesize text we've already sent
+        if (synthesizedRef.current.has(commentary)) return;
+        synthesizedRef.current.add(commentary);
+
+        const controller = new AbortController();
+
+        (async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/tts/synthesize`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: commentary }),
+                    signal: AbortSignal.timeout(10000),
+                });
+
+                if (!response.ok) {
+                    console.warn(`TTS synthesis failed with status ${response.status}`);
+                    return;
+                }
+
+                const blob = await response.blob();
+                enqueue(commentary, blob);
+            } catch (error) {
+                console.warn('TTS synthesis error, skipping commentary:', error);
+            }
+        })();
+
+        return () => {
+            controller.abort();
+        };
+    }, [summary?.commentary, enabled, enqueue]);
 
     if (gaveUp) {
         return (
@@ -69,10 +120,20 @@ export default function CommentaryPanel({ eventId }: CommentaryPanelProps) {
                 <svg className="w-4 h-4 text-indigo-400" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
                 </svg>
+                <TtsToggle />
             </div>
             <p className="text-slate-300 text-sm leading-relaxed">
                 {summary?.commentary}
             </p>
+            <div className="mt-2">
+                <PlaybackControls
+                    isPlaying={state.isPlaying}
+                    queueLength={state.queue.length}
+                    onSkip={skip}
+                    onStopAll={stopAll}
+                    onPlayNext={skip}
+                />
+            </div>
         </div>
     );
 }
