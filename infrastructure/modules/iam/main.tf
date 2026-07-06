@@ -216,6 +216,20 @@ resource "aws_iam_role_policy" "frontend_dynamodb" {
   })
 }
 
+resource "aws_iam_role_policy" "api_polly_synthesize" {
+  name = "polly-synthesize-speech"
+  role = aws_iam_role.frontend_task.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = "polly:SynthesizeSpeech"
+      Resource = "*"
+    }]
+  })
+}
+
 # ──────────────────────────────────────────────────────────────
 # GitHub Actions OIDC
 # OIDC = OpenID Connect. GitHub generates a short-lived token per

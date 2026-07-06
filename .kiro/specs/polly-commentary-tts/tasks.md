@@ -134,8 +134,8 @@ This plan implements text-to-speech for the GameShift Live commentary system. Th
     - Test disabled state stops and clears
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
 
-- [ ] 6. Frontend: Implement playback controls and CommentaryPanel integration
-  - [ ] 6.1 Create `PlaybackControls` component
+- [x] 6. Frontend: Implement playback controls and CommentaryPanel integration
+  - [x] 6.1 Create `PlaybackControls` component
     - Create `frontend/src/components/dashboard/PlaybackControls.tsx`
     - When audio is playing: show "Skip" and "Stop All" buttons with accessible labels
     - When not playing but queue has items: show "Play Next" and "Stop All" buttons
@@ -143,7 +143,7 @@ This plan implements text-to-speech for the GameShift Live commentary system. Th
     - Wire buttons to `skip()`, `stopAll()`, and a `playNext()` callback
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-  - [ ] 6.2 Integrate TTS into CommentaryPanel
+  - [x] 6.2 Integrate TTS into CommentaryPanel
     - Modify `frontend/src/components/dashboard/CommentaryPanel.tsx`
     - Add `TtsToggle` to the panel header
     - Add `PlaybackControls` below the toggle or in the panel footer
@@ -153,14 +153,14 @@ This plan implements text-to-speech for the GameShift Live commentary system. Th
     - Do not send synthesis requests when TTS is disabled
     - _Requirements: 2.1, 3.1, 3.3, 3.4_
 
-  - [ ] 6.3 Write unit tests for PlaybackControls
+  - [x] 6.3 Write unit tests for PlaybackControls
     - Create `frontend/src/components/__tests__/PlaybackControls.test.tsx`
     - Test button visibility in each state (playing, queued, empty)
     - Test button click handlers
     - Test accessible labels on buttons
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-  - [ ] 6.4 Write integration test for CommentaryPanel with TTS
+  - [x] 6.4 Write integration test for CommentaryPanel with TTS
     - Create `frontend/src/components/__tests__/CommentaryPanel.tts.test.tsx`
     - Test TTS toggle renders in panel header
     - Test new commentary triggers synthesis when TTS enabled
@@ -168,11 +168,11 @@ This plan implements text-to-speech for the GameShift Live commentary system. Th
     - Mock fetch for `/api/tts/synthesize`
     - _Requirements: 2.1, 3.1, 3.3_
 
-- [ ] 7. Checkpoint - Frontend verification
+- [x] 7. Checkpoint - Frontend verification
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 8. Infrastructure: Add Polly IAM permissions
-  - [ ] 8.1 Add Polly IAM policy to Terraform IAM module
+- [x] 8. Infrastructure: Add Polly IAM permissions
+  - [x] 8.1 Add Polly IAM policy to Terraform IAM module
     - Modify `infrastructure/modules/iam/main.tf`
     - Add a new `aws_iam_policy` resource granting only `polly:SynthesizeSpeech` with Resource `"*"`
     - Attach the policy to the API Service ECS task role
