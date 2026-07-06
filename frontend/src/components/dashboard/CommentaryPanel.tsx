@@ -71,7 +71,7 @@ export default function CommentaryPanel({ eventId }: CommentaryPanelProps) {
 
         (async () => {
             try {
-                const response = await fetch('/api/tts/synthesize', {
+                const response = await fetch('/api/auth/tts/synthesize', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
