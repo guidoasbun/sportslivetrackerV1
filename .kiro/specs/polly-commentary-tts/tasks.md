@@ -179,7 +179,7 @@ This plan implements text-to-speech for the GameShift Live commentary system. Th
     - Follow least privilege: only `polly:SynthesizeSpeech`, no other Polly actions
     - _Requirements: 7.1, 7.4, 7.5_
 
-- [ ] 9. Final checkpoint - Ensure all tests pass
+- [x] 9. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
