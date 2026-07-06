@@ -6,12 +6,12 @@ This plan implements text-to-speech for the GameShift Live commentary system. Th
 
 ## Tasks
 
-- [ ] 1. Backend: Add Polly dependency and client configuration
-  - [ ] 1.1 Add AWS SDK Polly dependency to `api/pom.xml`
+- [x] 1. Backend: Add Polly dependency and client configuration
+  - [x] 1.1 Add AWS SDK Polly dependency to `api/pom.xml`
     - Add `software.amazon.awssdk:polly` dependency under the existing AWS SDK BOM (no version needed)
     - _Requirements: 7.2_
 
-  - [ ] 1.2 Add PollyClient bean to `AwsConfig.java`
+  - [x] 1.2 Add PollyClient bean to `AwsConfig.java`
     - Create a `PollyClient` Spring bean in `api/src/main/java/live/gameshift/api/config/AwsConfig.java`
     - Configure the same region as other AWS clients (`app.aws.region`)
     - Set `apiCallTimeout` to 10 seconds via `overrideConfiguration`
