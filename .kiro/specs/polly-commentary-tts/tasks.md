@@ -70,8 +70,8 @@ This plan implements text-to-speech for the GameShift Live commentary system. Th
 - [x] 3. Checkpoint - Backend verification
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 4. Frontend: Implement TTS preference hook and toggle component
-  - [ ] 4.1 Create `useTtsPreference` hook
+- [x] 4. Frontend: Implement TTS preference hook and toggle component
+  - [x] 4.1 Create `useTtsPreference` hook
     - Create `frontend/src/lib/useTtsPreference.ts`
     - Manage boolean enabled state with `useState`
     - Persist to localStorage under key `gameshift-tts-enabled`
@@ -79,7 +79,7 @@ This plan implements text-to-speech for the GameShift Live commentary system. Th
     - Export `{ enabled, toggle }` interface
     - _Requirements: 2.4, 2.5_
 
-  - [ ] 4.2 Create `TtsToggle` component
+  - [x] 4.2 Create `TtsToggle` component
     - Create `frontend/src/components/dashboard/TtsToggle.tsx`
     - Render a button with speaker icon, `aria-pressed` attribute, and tooltip text
     - When off: unfilled icon, tooltip "Enable voice commentary"

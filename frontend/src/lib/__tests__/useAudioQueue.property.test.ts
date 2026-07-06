@@ -91,12 +91,15 @@ describe("useAudioQueue - Property Tests", () => {
     objectUrls.clear();
     urlCounter = 0;
 
-    // Mock Audio constructor
-    (globalThis as unknown as Record<string, unknown>).Audio = vi.fn(() => {
-      const instance = new MockAudioElement();
-      audioInstances.push(instance);
-      return instance;
-    });
+    // Mock Audio constructor — must use function expression (not arrow) so it works with `new`
+    (globalThis as unknown as Record<string, unknown>).Audio = vi.fn(
+      function (this: MockAudioElement, src?: string) {
+        const instance = new MockAudioElement();
+        if (src) instance.src = src;
+        audioInstances.push(instance);
+        return instance;
+      }
+    );
 
     // Mock URL.createObjectURL
     vi.spyOn(URL, "createObjectURL").mockImplementation((blob: Blob) => {
