@@ -67,7 +67,7 @@ This plan implements text-to-speech for the GameShift Live commentary system. Th
     - Use Spring MockMvc for integration-style controller tests
     - _Requirements: 1.1, 1.2, 1.4, 1.5, 1.6, 1.8, 1.9_
 
-- [ ] 3. Checkpoint - Backend verification
+- [x] 3. Checkpoint - Backend verification
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 4. Frontend: Implement TTS preference hook and toggle component
