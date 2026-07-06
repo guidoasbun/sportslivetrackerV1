@@ -102,8 +102,8 @@ This plan implements text-to-speech for the GameShift Live commentary system. Th
     - Test tooltip text changes with state
     - _Requirements: 2.1, 2.2, 2.3_
 
-- [ ] 5. Frontend: Implement audio queue hook
-  - [ ] 5.1 Create `useAudioQueue` hook
+- [x] 5. Frontend: Implement audio queue hook
+  - [x] 5.1 Create `useAudioQueue` hook
     - Create `frontend/src/lib/useAudioQueue.ts`
     - Manage `AudioQueueState`: queue (max 5 pending), currentlyPlaying, isPlaying
     - Implement `enqueue(text, audioBlob)`: deduplicate by text match, enforce capacity (drop oldest if full)
@@ -115,7 +115,7 @@ This plan implements text-to-speech for the GameShift Live commentary system. Th
     - Use `HTMLAudioElement` and `URL.createObjectURL` for playback
     - _Requirements: 3.1, 3.2, 3.4, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5_
 
-  - [ ] 5.2 Write property tests for audio queue
+  - [x] 5.2 Write property tests for audio queue
     - **Property 6: Audio queue FIFO ordering**
     - **Property 7: Audio queue deduplication**
     - **Property 8: Audio queue capacity invariant**
@@ -124,7 +124,7 @@ This plan implements text-to-speech for the GameShift Live commentary system. Th
     - `// Feature: polly-commentary-tts, Property 6/7/8`
     - **Validates: Requirements 3.2, 3.5, 4.1, 4.3**
 
-  - [ ] 5.3 Write unit tests for useAudioQueue
+  - [x] 5.3 Write unit tests for useAudioQueue
     - Create `frontend/src/lib/__tests__/useAudioQueue.test.ts`
     - Test FIFO playback order
     - Test queue capacity limit of 5
