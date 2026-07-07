@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/sessions";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
+function getBackendUrl(): string {
+    return process.env.BACKEND_URL || "http://localhost:8080";
+}
 
 export async function POST(request: NextRequest) {
     const session = await getSession();
@@ -23,7 +25,7 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    const backendResponse = await fetch(`${BACKEND_URL}/api/tts/synthesize`, {
+    const backendResponse = await fetch(`${getBackendUrl()}/api/tts/synthesize`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
