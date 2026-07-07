@@ -88,6 +88,7 @@ module "ecs" {
   ecr_api_repository_url  = module.ecr.api_repository_url
   ecr_frontend_repository_url = module.ecr.frontend_repository_url
   kinesis_stream_name     = module.kinesis.stream_name
+  alb_dns_name            = module.alb.alb_dns_name
   api_sports_key_arn      = var.api_sports_key_arn
   events_table_name       = module.dynamodb.events_table_name
   summaries_table_name    = module.dynamodb.summaries_table_name

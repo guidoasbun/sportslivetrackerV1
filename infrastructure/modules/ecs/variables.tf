@@ -43,6 +43,11 @@ variable "target_group_arn" {
   type        = string
 }
 
+variable "alb_dns_name" {
+  description = "DNS name of the ALB for internal service-to-service communication"
+  type        = string
+}
+
 variable "ecr_producer_repository_url" {
   description = "ECR repository URL for the producer image"
   type        = string

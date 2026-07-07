@@ -209,6 +209,7 @@ resource "aws_ecs_task_definition" "frontend" {
     environment = [
       { name = "ENVIRONMENT", value = var.environment },
       { name = "AWS_REGION", value = data.aws_region.current.name },
+      { name = "BACKEND_URL", value = "http://${var.alb_dns_name}" },
     ]
 
     logConfiguration = {
