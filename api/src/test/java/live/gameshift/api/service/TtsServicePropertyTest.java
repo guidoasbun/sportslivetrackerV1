@@ -24,15 +24,15 @@ import static org.mockito.Mockito.*;
  */
 class TtsServicePropertyTest {
 
-    private static final Set<String> SUPPORTED_VOICES = Set.of("Matthew", "Joanna", "Liam", "Ruth");
-    private static final String DEFAULT_VOICE = "Matthew";
+    private static final Set<String> SUPPORTED_VOICES = Set.of("Matthew", "Joanna", "Liam", "Ruth", "Sergio");
+    private static final String DEFAULT_VOICE = "Sergio";
 
     /**
      * Property 1: Valid request produces correct Polly invocation
      *
      * For any valid commentary text (1 to 3000 characters, non-blank) and for any voiceId
      * in {Matthew, Joanna, Liam, Ruth, null}, the TtsService SHALL invoke Polly with
-     * engine=NEURAL, outputFormat=MP3, sampleRate=24000, textType=TEXT, and voiceId equal
+     * engine=GENERATIVE, outputFormat=MP3, sampleRate=24000, textType=TEXT, and voiceId equal
      * to the provided value (or "Matthew" if null), and return the Polly audio bytes.
      *
      * Validates: Requirements 1.2, 1.3, 6.1, 6.2, 6.4, 6.5
@@ -66,7 +66,7 @@ class TtsServicePropertyTest {
         verify(mockPollyClient).synthesizeSpeech(requestCaptor.capture());
 
         SynthesizeSpeechRequest capturedRequest = requestCaptor.getValue();
-        assertEquals(Engine.NEURAL, capturedRequest.engine());
+        assertEquals(Engine.GENERATIVE, capturedRequest.engine());
         assertEquals(OutputFormat.MP3, capturedRequest.outputFormat());
         assertEquals("24000", capturedRequest.sampleRate());
         assertEquals(TextType.TEXT, capturedRequest.textType());
@@ -175,7 +175,7 @@ class TtsServicePropertyTest {
     @Provide
     Arbitrary<String> validOrNullVoiceId() {
         // Generate either a valid voice or null
-        Arbitrary<String> validVoice = Arbitraries.of("Matthew", "Joanna", "Liam", "Ruth");
+        Arbitrary<String> validVoice = Arbitraries.of("Matthew", "Joanna", "Liam", "Ruth", "Sergio");
         Arbitrary<String> nullVoice = Arbitraries.just(null);
         return Arbitraries.oneOf(validVoice, nullVoice);
     }
