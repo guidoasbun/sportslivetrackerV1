@@ -92,6 +92,7 @@ module "ecs" {
   api_sports_key_arn      = var.api_sports_key_arn
   events_table_name       = module.dynamodb.events_table_name
   summaries_table_name    = module.dynamodb.summaries_table_name
+  domain_name             = var.domain_name
 }
 
 module "cognito" {

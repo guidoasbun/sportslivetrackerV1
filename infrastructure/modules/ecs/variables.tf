@@ -158,3 +158,8 @@ variable "summaries_table_name" {
   description = "DynamoDB Summaries table name, passed to the API container as an environment variable"
   type        = string
 }
+
+variable "domain_name" {
+  description = "Domain name for the application (e.g., dev.gameshift.live) — used for internal service-to-service HTTPS calls"
+  type        = string
+}
