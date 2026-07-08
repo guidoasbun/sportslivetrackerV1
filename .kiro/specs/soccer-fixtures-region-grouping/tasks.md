@@ -45,11 +45,11 @@ This plan implements region-based grouping for soccer fixtures. The backend is e
     - Test mock mode returns realistic league/country combos
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 2.3_
 
-- [~] 2. Checkpoint - Backend complete
+- [x] 2. Checkpoint - Backend complete
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 3. Implement frontend grouping utility
-  - [~] 3.1 Create `groupFixturesByRegion` utility function
+- [x] 3. Implement frontend grouping utility
+  - [x] 3.1 Create `groupFixturesByRegion` utility function
     - Create `frontend/src/lib/fixtureGrouping.ts`
     - Define `Fixture` interface (extending existing with optional `leagueName` and `country` fields)
     - Define `RegionGroup` interface with `label: string` and `fixtures: Fixture[]`
@@ -60,7 +60,7 @@ This plan implements region-based grouping for soccer fixtures. The backend is e
     - Sort fixtures within each group by `startTime` ascending
     - _Requirements: 3.1, 3.3, 3.4, 3.6_
 
-  - [~] 3.2 Write property tests for `groupFixturesByRegion` (fast-check)
+  - [x] 3.2 Write property tests for `groupFixturesByRegion` (fast-check)
     - **Property 3: Grouping correctness with default handling**
     - Generate random fixture arrays with varying country/leagueName (including null/undefined/empty); verify every fixture appears in exactly one group with correct label
     - **Property 4: Region groups are sorted alphabetically**
@@ -71,7 +71,7 @@ This plan implements region-based grouping for soccer fixtures. The backend is e
     - Describe block: `"Feature: soccer-fixtures-region-grouping, Property N: ..."`
     - **Validates: Requirements 3.1, 3.3, 3.4, 3.6**
 
-  - [~] 3.3 Write unit tests for `groupFixturesByRegion`
+  - [x] 3.3 Write unit tests for `groupFixturesByRegion`
     - Test empty array returns empty array
     - Test single fixture produces single group
     - Test multiple fixtures in same league grouped together
@@ -161,13 +161,11 @@ This plan implements region-based grouping for soccer fixtures. The backend is e
 ```json
 {
   "waves": [
-    { "id": 0, "tasks": ["1.1"] },
-    { "id": 1, "tasks": ["1.2", "1.3"] },
-    { "id": 2, "tasks": ["1.4", "1.5", "3.1"] },
-    { "id": 3, "tasks": ["3.2", "3.3", "4.1"] },
-    { "id": 4, "tasks": ["4.2", "5.1"] },
-    { "id": 5, "tasks": ["5.2", "5.3"] },
-    { "id": 6, "tasks": ["5.4", "5.5"] }
+    { "id": 0, "tasks": ["3.1"] },
+    { "id": 1, "tasks": ["3.2", "3.3", "4.1"] },
+    { "id": 2, "tasks": ["4.2", "5.1"] },
+    { "id": 3, "tasks": ["5.2", "5.3"] },
+    { "id": 4, "tasks": ["5.4", "5.5"] }
   ]
 }
 ```
