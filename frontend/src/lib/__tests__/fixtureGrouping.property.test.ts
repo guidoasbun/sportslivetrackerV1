@@ -175,3 +175,40 @@ describe("Feature: soccer-fixtures-region-grouping, Property 5: Fixtures within 
     );
   });
 });
+
+
+describe("Feature: soccer-fixtures-region-grouping, Property 6: Collapsed group count matches actual fixture count", () => {
+  /**
+   * **Validates: Requirements 4.3**
+   *
+   * For any RegionGroup with N fixtures (N ≥ 1), the count value displayed when
+   * collapsed (fixtureCount prop passed to RegionGroupHeader) SHALL equal N.
+   * Furthermore, N SHALL equal the number of fixtures in the input whose effective
+   * group label matches this group's label.
+   */
+  it("each group's fixture count equals the number of input fixtures belonging to that group", () => {
+    fc.assert(
+      fc.property(
+        fc.array(arbitraryFixture(), { minLength: 1, maxLength: 30 }),
+        (fixtures) => {
+          const groups = groupFixturesByRegion(fixtures);
+
+          for (const group of groups) {
+            // The fixtureCount that would be passed to RegionGroupHeader
+            const fixtureCount = group.fixtures.length;
+
+            // Count fixtures from input that should belong to this group
+            const expectedCount = fixtures.filter(
+              (f) => expectedLabel(f) === group.label
+            ).length;
+
+            // The displayed count must equal the actual number of fixtures in the group
+            expect(fixtureCount).toBeGreaterThanOrEqual(1);
+            expect(fixtureCount).toBe(expectedCount);
+          }
+        }
+      ),
+      { numRuns: 100 }
+    );
+  });
+});

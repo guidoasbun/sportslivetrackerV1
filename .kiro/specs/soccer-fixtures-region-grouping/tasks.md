@@ -82,8 +82,8 @@ This plan implements region-based grouping for soccer fixtures. The backend is e
     - Test startTime ascending sorting within groups
     - _Requirements: 3.1, 3.3, 3.4, 3.6_
 
-- [ ] 4. Implement collapsible region group UI
-  - [~] 4.1 Create `RegionGroupHeader` component
+- [x] 4. Implement collapsible region group UI
+  - [x] 4.1 Create `RegionGroupHeader` component
     - Create `frontend/src/components/dashboard/RegionGroupHeader.tsx`
     - Render group label text and a chevron icon indicating expand/collapse state
     - When collapsed, display parenthetical fixture count (e.g., "(3)")
@@ -93,7 +93,7 @@ This plan implements region-based grouping for soccer fixtures. The backend is e
     - Style: consistent with existing dark-themed UI in the project
     - _Requirements: 4.1, 4.2, 4.3, 4.5_
 
-  - [~] 4.2 Write unit tests for `RegionGroupHeader`
+  - [x] 4.2 Write unit tests for `RegionGroupHeader`
     - Test renders group label and fixture count when collapsed
     - Test click toggles expanded state
     - Test Enter key toggles expanded state
@@ -102,12 +102,12 @@ This plan implements region-based grouping for soccer fixtures. The backend is e
     - Test chevron icon rotates on toggle
     - _Requirements: 4.1, 4.2, 4.3, 4.5_
 
-- [ ] 5. Integrate region grouping into FixtureList
-  - [~] 5.1 Update `Fixture` interface in `FixtureList.tsx`
+- [x] 5. Integrate region grouping into FixtureList
+  - [x] 5.1 Update `Fixture` interface in `FixtureList.tsx`
     - Add optional `leagueName?: string` and `country?: string` fields to the existing `Fixture` interface
     - _Requirements: 2.1, 2.2_
 
-  - [~] 5.2 Implement grouped layout for soccer in `FixtureList.tsx`
+  - [x] 5.2 Implement grouped layout for soccer in `FixtureList.tsx`
     - Import `groupFixturesByRegion` from `@/lib/fixtureGrouping`
     - Import `RegionGroupHeader` component
     - When `sport === "SOCCER"`: call `groupFixturesByRegion(fixtures)`, render vertical stack of region groups
@@ -117,7 +117,7 @@ This plan implements region-based grouping for soccer fixtures. The backend is e
     - Maintain horizontal scroll within each group's fixture row
     - _Requirements: 3.1, 3.2, 3.5, 5.1, 5.2, 5.3, 5.4_
 
-  - [~] 5.3 Implement session storage persistence for collapse state
+  - [x] 5.3 Implement session storage persistence for collapse state
     - Store collapse state per group using key format: `fixture-group-state-${groupLabel}`
     - Values: `"collapsed"` or `"expanded"`
     - On mount, read persisted state for each group; default to expanded if no key exists
@@ -125,14 +125,14 @@ This plan implements region-based grouping for soccer fixtures. The backend is e
     - Gracefully handle `sessionStorage` unavailability (e.g., private browsing) by falling back to all-expanded with no persistence
     - _Requirements: 4.1, 4.4_
 
-  - [~] 5.4 Write property test for collapsed group count
+  - [x] 5.4 Write property test for collapsed group count
     - **Property 6: Collapsed group count matches actual fixture count**
     - Generate fixture arrays, verify count displayed for each group equals the number of fixtures in that group
     - `numRuns: 100` minimum
     - Describe block: `"Feature: soccer-fixtures-region-grouping, Property 6: ..."`
     - **Validates: Requirements 4.3**
 
-  - [~] 5.5 Write unit tests for FixtureList integration
+  - [x] 5.5 Write unit tests for FixtureList integration
     - Test soccer sport renders grouped vertical layout
     - Test non-soccer sport renders flat horizontal list
     - Test session storage read on mount
@@ -143,7 +143,7 @@ This plan implements region-based grouping for soccer fixtures. The backend is e
     - Test expanded by default when no persisted state
     - _Requirements: 3.2, 3.5, 4.1, 4.4, 5.1, 5.2, 5.3, 5.4_
 
-- [~] 6. Final checkpoint
+- [x] 6. Final checkpoint
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
