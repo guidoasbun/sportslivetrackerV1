@@ -98,7 +98,7 @@ public class FixtureController {
         }
     }
 
-    private List<FixtureDto> parseFixturesResponse(String response, SportType sport) {
+    List<FixtureDto> parseFixturesResponse(String response, SportType sport) {
         if (response == null || response.isBlank()) {
             return Collections.emptyList();
         }
@@ -124,12 +124,40 @@ public class FixtureController {
 
                     String status = elapsed > 0 ? statusText + " - " + elapsed + "'" : statusText;
 
+                    // Extract league metadata
+                    JsonNode leagueNode = fixture.path("league");
+                    String leagueName;
+                    String country;
+
+                    if (leagueNode.isMissingNode()) {
+                        leagueName = "Unknown League";
+                        country = "International";
+                    } else {
+                        String rawLeagueName = leagueNode.path("name").asText("");
+                        String rawCountry = leagueNode.path("country").asText("");
+
+                        leagueName = (rawLeagueName == null || rawLeagueName.isBlank())
+                                ? "Unknown League" : rawLeagueName;
+                        country = (rawCountry == null || rawCountry.isBlank())
+                                ? "International" : rawCountry;
+                    }
+
+                    // Truncate values exceeding 100 characters
+                    if (leagueName.length() > 100) {
+                        leagueName = leagueName.substring(0, 100);
+                    }
+                    if (country.length() > 100) {
+                        country = country.substring(0, 100);
+                    }
+
                     result.add(new FixtureDto(
                             fixtureId,
                             sport,
                             Map.of("home", home, "away", away),
                             status,
-                            timestamp
+                            timestamp,
+                            leagueName,
+                            country
                     ));
                 } catch (Exception e) {
                     log.debug("Failed to parse fixture entry: {}", e.getMessage());
@@ -148,7 +176,7 @@ public class FixtureController {
      * [MOCK] Returns simulated fixture data matching the producer's MockDataService fixtures.
      * These fixture IDs align with what the producer publishes to Kinesis in mock mode.
      */
-    private List<FixtureDto> getMockFixtures(SportType sport) {
+    List<FixtureDto> getMockFixtures(SportType sport) {
         long now = System.currentTimeMillis();
         // Start times staggered to look realistic
         long started30MinAgo = now - (30 * 60 * 1000);
@@ -159,53 +187,53 @@ public class FixtureController {
             case SOCCER -> List.of(
                 new FixtureDto("MOCK-S01", SportType.SOCCER,
                     Map.of("home", "Manchester City", "away", "Real Madrid"),
-                    "LIVE - 1H", started30MinAgo),
+                    "LIVE - 1H", started30MinAgo, "Champions League", "Europe"),
                 new FixtureDto("MOCK-S02", SportType.SOCCER,
                     Map.of("home", "Barcelona", "away", "Bayern Munich"),
-                    "LIVE - 2H", started30MinAgo),
+                    "LIVE - 2H", started30MinAgo, "Champions League", "Europe"),
                 new FixtureDto("MOCK-S03", SportType.SOCCER,
                     Map.of("home", "Liverpool", "away", "Inter Milan"),
-                    "LIVE - 1H", started15MinAgo)
+                    "LIVE - 1H", started15MinAgo, "Champions League", "Europe")
             );
             case BASKETBALL -> List.of(
                 new FixtureDto("MOCK-B01", SportType.BASKETBALL,
                     Map.of("home", "Lakers", "away", "Celtics"),
-                    "LIVE - Q2", started30MinAgo),
+                    "LIVE - Q2", started30MinAgo, "NBA", "USA"),
                 new FixtureDto("MOCK-B02", SportType.BASKETBALL,
                     Map.of("home", "Warriors", "away", "Nuggets"),
-                    "LIVE - Q3", started15MinAgo)
+                    "LIVE - Q3", started15MinAgo, "NBA", "USA")
             );
             case FOOTBALL -> List.of(
                 new FixtureDto("MOCK-F01", SportType.FOOTBALL,
                     Map.of("home", "Chiefs", "away", "Eagles"),
-                    "LIVE - Q1", started15MinAgo),
+                    "LIVE - Q1", started15MinAgo, "NFL", "USA"),
                 new FixtureDto("MOCK-F02", SportType.FOOTBALL,
                     Map.of("home", "49ers", "away", "Cowboys"),
-                    "LIVE - Q2", started30MinAgo)
+                    "LIVE - Q2", started30MinAgo, "NFL", "USA")
             );
             case BASEBALL -> List.of(
                 new FixtureDto("MOCK-X01", SportType.BASEBALL,
                     Map.of("home", "Yankees", "away", "Dodgers"),
-                    "LIVE - Top 4th", started30MinAgo),
+                    "LIVE - Top 4th", started30MinAgo, "MLB", "USA"),
                 new FixtureDto("MOCK-X02", SportType.BASEBALL,
                     Map.of("home", "Astros", "away", "Braves"),
-                    "LIVE - Bot 6th", started30MinAgo)
+                    "LIVE - Bot 6th", started30MinAgo, "MLB", "USA")
             );
             case HOCKEY -> List.of(
                 new FixtureDto("MOCK-H01", SportType.HOCKEY,
                     Map.of("home", "Oilers", "away", "Panthers"),
-                    "LIVE - P2", started15MinAgo),
+                    "LIVE - P2", started15MinAgo, "NHL", "USA"),
                 new FixtureDto("MOCK-H02", SportType.HOCKEY,
                     Map.of("home", "Avalanche", "away", "Rangers"),
-                    "LIVE - P1", started5MinAgo)
+                    "LIVE - P1", started5MinAgo, "NHL", "USA")
             );
             case FORMULA_1 -> List.of(
                 new FixtureDto("MOCK-R01", SportType.FORMULA_1,
                     Map.of("home", "Monaco Grand Prix", "away", "Race"),
-                    "LIVE - Lap 23", started30MinAgo),
+                    "LIVE - Lap 23", started30MinAgo, "Formula 1 World Championship", "World"),
                 new FixtureDto("MOCK-R02", SportType.FORMULA_1,
                     Map.of("home", "Silverstone Grand Prix", "away", "Race"),
-                    "LIVE - Lap 12", started15MinAgo)
+                    "LIVE - Lap 12", started15MinAgo, "Formula 1 World Championship", "World")
             );
         };
     }

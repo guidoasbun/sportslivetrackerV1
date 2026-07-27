@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { API_BASE_URL } from '@/lib/constants';
+import { groupFixturesByRegion } from '@/lib/fixtureGrouping';
+import RegionGroupHeader from '@/components/dashboard/RegionGroupHeader';
 
 interface Fixture {
     fixtureId: string;
@@ -9,6 +11,8 @@ interface Fixture {
     participants: Record<string, string>;
     status: string;
     startTime: number;
+    leagueName?: string;
+    country?: string;
 }
 
 interface FixtureListProps {
@@ -21,6 +25,7 @@ export default function FixtureList({ sport, selectedFixtureId, onSelectFixture 
     const [fixtures, setFixtures] = useState<Fixture[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
     const fetchFixtures = useCallback(async () => {
         setLoading(true);
@@ -143,6 +148,134 @@ export default function FixtureList({ sport, selectedFixtureId, onSelectFixture 
         );
     }
 
+    function toggleGroup(label: string) {
+        setExpandedGroups(prev => ({
+            ...prev,
+            [label]: !isGroupExpanded(label),
+        }));
+    }
+
+    function isGroupExpanded(label: string): boolean {
+        // Default to expanded if no state exists
+        return expandedGroups[label] !== undefined ? expandedGroups[label] : true;
+    }
+
+    function renderFixtureCard(fixture: Fixture) {
+        const isSelected = fixture.fixtureId === selectedFixtureId;
+        const statusInfo = getStatusIndicator(fixture.status);
+        const home = fixture.participants?.home || 'TBD';
+        const away = fixture.participants?.away || 'TBD';
+        const homeLogo = fixture.participants?.homeLogo;
+        const awayLogo = fixture.participants?.awayLogo;
+
+        return (
+            <button
+                key={fixture.fixtureId}
+                onClick={() => onSelectFixture(fixture.fixtureId)}
+                style={{
+                    minWidth: '220px',
+                    padding: '14px 18px',
+                    borderRadius: '12px',
+                    border: isSelected
+                        ? '2px solid #00b4db'
+                        : '1px solid rgba(255,255,255,0.1)',
+                    background: isSelected
+                        ? 'rgba(0, 180, 219, 0.1)'
+                        : 'rgba(255,255,255,0.03)',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'all 0.2s ease',
+                    boxShadow: isSelected ? '0 4px 12px rgba(0, 180, 219, 0.2)' : 'none'
+                }}
+            >
+                {/* Participants with logos */}
+                <div style={{ color: 'white', fontSize: '14px', fontWeight: 600, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {homeLogo && <img src={homeLogo} alt={home} style={{ width: '20px', height: '20px', objectFit: 'contain' }} />}
+                    <span>{home}</span>
+                    <span style={{ color: '#64748b', margin: '0 2px' }}>vs</span>
+                    {awayLogo && <img src={awayLogo} alt={away} style={{ width: '20px', height: '20px', objectFit: 'contain' }} />}
+                    <span>{away}</span>
+                </div>
+
+                {/* Status and time */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '2px 8px',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        fontWeight: 500,
+                        color: statusInfo.color,
+                        background: statusInfo.bgColor
+                    }}>
+                        <span style={{
+                            width: '6px',
+                            height: '6px',
+                            borderRadius: '50%',
+                            background: statusInfo.color
+                        }} />
+                        {statusInfo.label === 'Live' ? fixture.status : statusInfo.label}
+                    </span>
+                    <span style={{ color: '#94a3b8', fontSize: '12px' }}>
+                        {formatStartTime(fixture.startTime)}
+                    </span>
+                </div>
+            </button>
+        );
+    }
+
+    // Soccer: grouped vertical layout
+    if (sport === "SOCCER") {
+        const regionGroups = groupFixturesByRegion(fixtures);
+
+        return (
+            <div style={{
+                maxHeight: '600px',
+                overflowY: 'auto',
+                padding: '16px 20px',
+                background: 'rgba(255,255,255,0.02)',
+                borderRadius: '12px',
+                border: '1px solid rgba(255,255,255,0.05)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+            }}>
+                {regionGroups.map(group => {
+                    const groupId = `region-group-${group.label.replace(/\s+/g, '-').toLowerCase()}`;
+                    const expanded = isGroupExpanded(group.label);
+
+                    return (
+                        <div key={group.label}>
+                            <RegionGroupHeader
+                                label={group.label}
+                                fixtureCount={group.fixtures.length}
+                                isExpanded={expanded}
+                                onToggle={() => toggleGroup(group.label)}
+                                groupId={groupId}
+                            />
+                            {expanded && (
+                                <div
+                                    id={groupId}
+                                    style={{
+                                        display: 'flex',
+                                        gap: '12px',
+                                        overflowX: 'auto',
+                                        padding: '12px 0',
+                                    }}
+                                >
+                                    {group.fixtures.map(fixture => renderFixtureCard(fixture))}
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
+        );
+    }
+
+    // Non-soccer: existing flat horizontal list
     return (
         <div style={{
             display: 'flex',
@@ -153,71 +286,7 @@ export default function FixtureList({ sport, selectedFixtureId, onSelectFixture 
             borderRadius: '12px',
             border: '1px solid rgba(255,255,255,0.05)'
         }}>
-            {fixtures.map(fixture => {
-                const isSelected = fixture.fixtureId === selectedFixtureId;
-                const statusInfo = getStatusIndicator(fixture.status);
-                const home = fixture.participants?.home || 'TBD';
-                const away = fixture.participants?.away || 'TBD';
-                const homeLogo = fixture.participants?.homeLogo;
-                const awayLogo = fixture.participants?.awayLogo;
-
-                return (
-                    <button
-                        key={fixture.fixtureId}
-                        onClick={() => onSelectFixture(fixture.fixtureId)}
-                        style={{
-                            minWidth: '220px',
-                            padding: '14px 18px',
-                            borderRadius: '12px',
-                            border: isSelected
-                                ? '2px solid #00b4db'
-                                : '1px solid rgba(255,255,255,0.1)',
-                            background: isSelected
-                                ? 'rgba(0, 180, 219, 0.1)'
-                                : 'rgba(255,255,255,0.03)',
-                            cursor: 'pointer',
-                            textAlign: 'left',
-                            transition: 'all 0.2s ease',
-                            boxShadow: isSelected ? '0 4px 12px rgba(0, 180, 219, 0.2)' : 'none'
-                        }}
-                    >
-                        {/* Participants with logos */}
-                        <div style={{ color: 'white', fontSize: '14px', fontWeight: 600, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            {homeLogo && <img src={homeLogo} alt={home} style={{ width: '20px', height: '20px', objectFit: 'contain' }} />}
-                            <span>{home}</span>
-                            <span style={{ color: '#64748b', margin: '0 2px' }}>vs</span>
-                            {awayLogo && <img src={awayLogo} alt={away} style={{ width: '20px', height: '20px', objectFit: 'contain' }} />}
-                            <span>{away}</span>
-                        </div>
-
-                        {/* Status and time */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                padding: '2px 8px',
-                                borderRadius: '6px',
-                                fontSize: '11px',
-                                fontWeight: 500,
-                                color: statusInfo.color,
-                                background: statusInfo.bgColor
-                            }}>
-                                <span style={{
-                                    width: '6px',
-                                    height: '6px',
-                                    borderRadius: '50%',
-                                    background: statusInfo.color
-                                }} />
-                                {statusInfo.label === 'Live' ? fixture.status : statusInfo.label}
-                            </span>
-                            <span style={{ color: '#94a3b8', fontSize: '12px' }}>
-                                {formatStartTime(fixture.startTime)}
-                            </span>
-                        </div>
-                    </button>
-                );
-            })}
+            {fixtures.map(fixture => renderFixtureCard(fixture))}
         </div>
     );
 }

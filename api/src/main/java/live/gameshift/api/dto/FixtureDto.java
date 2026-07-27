@@ -8,5 +8,7 @@ public record FixtureDto(
     SportType sportType,
     Map<String, String> participants,
     String status,
-    Long startTime
+    Long startTime,
+    String leagueName,
+    String country
 ) {}
