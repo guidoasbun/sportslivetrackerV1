@@ -74,3 +74,31 @@ variable "allow_localhost" {
   type        = bool
   default     = false
 }
+
+# ──────────────────────────────────────────────────────────────
+# Scheduled scale-to-zero (cost control)
+# ──────────────────────────────────────────────────────────────
+
+variable "enable_scheduled_scaling" {
+  description = "If true, ECS services scale to 0 tasks off-hours and back up on-hours on a cron schedule."
+  type        = bool
+  default     = false
+}
+
+variable "scale_up_cron" {
+  description = "Application Auto Scaling cron for scaling services UP. Default: 08:00 weekdays."
+  type        = string
+  default     = "cron(0 8 ? * MON-FRI *)"
+}
+
+variable "scale_down_cron" {
+  description = "Application Auto Scaling cron for scaling services DOWN to zero. Default: 20:00 daily."
+  type        = string
+  default     = "cron(0 20 * * ? *)"
+}
+
+variable "scaling_timezone" {
+  description = "IANA timezone for the scaling cron expressions (e.g., America/New_York)."
+  type        = string
+  default     = "Etc/UTC"
+}

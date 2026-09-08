@@ -73,26 +73,31 @@ module "alb" {
 module "ecs" {
   source = "./modules/ecs"
 
-  project_name            = var.project_name
-  environment             = var.environment
-  vpc_id                  = module.networking.vpc_id
-  private_subnet_ids      = module.networking.private_subnet_ids
-  alb_security_group_id   = module.alb.security_group_id
-  ecs_execution_role_arn  = module.iam.ecs_execution_role_arn
-  producer_task_role_arn  = module.iam.producer_task_role_arn
-  frontend_task_role_arn  = module.iam.frontend_task_role_arn
-  api_task_role_arn       = module.iam.frontend_task_role_arn
-  target_group_arn        = module.alb.target_group_arn
-  api_target_group_arn    = module.alb.api_target_group_arn
+  project_name                = var.project_name
+  environment                 = var.environment
+  vpc_id                      = module.networking.vpc_id
+  private_subnet_ids          = module.networking.private_subnet_ids
+  alb_security_group_id       = module.alb.security_group_id
+  ecs_execution_role_arn      = module.iam.ecs_execution_role_arn
+  producer_task_role_arn      = module.iam.producer_task_role_arn
+  frontend_task_role_arn      = module.iam.frontend_task_role_arn
+  api_task_role_arn           = module.iam.frontend_task_role_arn
+  target_group_arn            = module.alb.target_group_arn
+  api_target_group_arn        = module.alb.api_target_group_arn
   ecr_producer_repository_url = module.ecr.producer_repository_url
-  ecr_api_repository_url  = module.ecr.api_repository_url
+  ecr_api_repository_url      = module.ecr.api_repository_url
   ecr_frontend_repository_url = module.ecr.frontend_repository_url
-  kinesis_stream_name     = module.kinesis.stream_name
-  alb_dns_name            = module.alb.alb_dns_name
-  api_sports_key_arn      = var.api_sports_key_arn
-  events_table_name       = module.dynamodb.events_table_name
-  summaries_table_name    = module.dynamodb.summaries_table_name
-  domain_name             = var.domain_name
+  kinesis_stream_name         = module.kinesis.stream_name
+  alb_dns_name                = module.alb.alb_dns_name
+  api_sports_key_arn          = var.api_sports_key_arn
+  events_table_name           = module.dynamodb.events_table_name
+  summaries_table_name        = module.dynamodb.summaries_table_name
+  domain_name                 = var.domain_name
+
+  enable_scheduled_scaling = var.enable_scheduled_scaling
+  scale_up_cron            = var.scale_up_cron
+  scale_down_cron          = var.scale_down_cron
+  scaling_timezone         = var.scaling_timezone
 }
 
 module "cognito" {

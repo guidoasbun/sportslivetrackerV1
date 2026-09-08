@@ -18,3 +18,15 @@ github_repo                 = "sportslivetrackerV1"
 create_github_oidc_provider = true
 cognito_domain_prefix       = "sports-tracker-dev-412381"
 allow_localhost             = true
+
+# ──────────────────────────────────────────────────────────────
+# Scheduled scale-to-zero (cost control)
+# ECS services run 08:00–20:00 on weekdays and scale to 0 otherwise.
+# Adjust scaling_timezone to your local zone and the crons to your hours.
+# The app is unavailable while scaled to zero and takes 1–3 min to warm
+# up on scale-up (Fargate task placement + Spring Boot startup).
+# ──────────────────────────────────────────────────────────────
+enable_scheduled_scaling = true
+scale_up_cron            = "cron(0 8 ? * MON-FRI *)"
+scale_down_cron          = "cron(0 20 * * ? *)"
+scaling_timezone         = "America/Los_Angeles"

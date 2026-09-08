@@ -142,8 +142,8 @@ resource "aws_iam_role_policy" "lambda_bedrock" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect   = "Allow"
-      Action   = "bedrock:InvokeModel"
+      Effect = "Allow"
+      Action = "bedrock:InvokeModel"
       Resource = [
         "arn:aws:bedrock:*::foundation-model/*",
         "arn:aws:bedrock:*:${local.account_id}:inference-profile/*",
@@ -237,9 +237,9 @@ resource "aws_iam_role_policy" "api_polly_synthesize" {
 # AWS keys ever stored in GitHub secrets.
 # ──────────────────────────────────────────────────────────────
 resource "aws_iam_openid_connect_provider" "github" {
-  count           = var.create_github_oidc_provider ? 1 : 0
-  url             = "https://token.actions.githubusercontent.com"
-  client_id_list  = ["sts.amazonaws.com"]
+  count          = var.create_github_oidc_provider ? 1 : 0
+  url            = "https://token.actions.githubusercontent.com"
+  client_id_list = ["sts.amazonaws.com"]
   thumbprint_list = [
     "6938fd4d98bab03faadb97b34396831e3780aea1",
     "1c58a3a8518e8759bf075b76b750d4f2df264fcd",
@@ -254,7 +254,7 @@ data "aws_iam_openid_connect_provider" "github_existing" {
 locals {
   github_oidc_arn = var.create_github_oidc_provider ? (
     aws_iam_openid_connect_provider.github[0].arn
-  ) : (
+    ) : (
     data.aws_iam_openid_connect_provider.github_existing[0].arn
   )
 }
@@ -322,8 +322,8 @@ resource "aws_iam_role_policy" "github_actions_deploy" {
         Resource = "arn:aws:ecs:${local.region}:${local.account_id}:service/${var.project_name}-${var.environment}-*"
       },
       {
-        Effect   = "Allow"
-        Action   = [
+        Effect = "Allow"
+        Action = [
           "lambda:UpdateFunctionCode",
           "lambda:UpdateFunctionConfiguration",
         ]

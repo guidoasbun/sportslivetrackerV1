@@ -65,13 +65,18 @@ resource "aws_cloudwatch_metric_alarm" "lambda_error_rate" {
 # Requirements: 9.2, 9.4
 # -----------------------------------------------------------------------------
 
+# NOTE: These alarms use the standard AWS/ECS CPUUtilization metric rather
+# than ECS/ContainerInsights RunningTaskCount, because Container Insights is
+# disabled to save cost. A healthy service continuously reports CPUUtilization;
+# when a service drops to zero running tasks the metric stops publishing, so
+# treat_missing_data = "breaching" still fires the "service down" alarm.
 resource "aws_cloudwatch_metric_alarm" "ecs_producer_no_tasks" {
   alarm_name          = "${var.project_name}-${var.environment}-ecs-producer-no-tasks"
-  alarm_description   = "Producer ECS service has zero running tasks"
-  comparison_operator = "LessThanOrEqualToThreshold"
+  alarm_description   = "Producer ECS service has zero running tasks (no CPU metrics reported)"
+  comparison_operator = "LessThanThreshold"
   evaluation_periods  = 2
-  metric_name         = "RunningTaskCount"
-  namespace           = "ECS/ContainerInsights"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ECS"
   period              = 60
   statistic           = "Average"
   threshold           = 0
@@ -88,11 +93,11 @@ resource "aws_cloudwatch_metric_alarm" "ecs_producer_no_tasks" {
 
 resource "aws_cloudwatch_metric_alarm" "ecs_api_no_tasks" {
   alarm_name          = "${var.project_name}-${var.environment}-ecs-api-no-tasks"
-  alarm_description   = "API ECS service has zero running tasks"
-  comparison_operator = "LessThanOrEqualToThreshold"
+  alarm_description   = "API ECS service has zero running tasks (no CPU metrics reported)"
+  comparison_operator = "LessThanThreshold"
   evaluation_periods  = 2
-  metric_name         = "RunningTaskCount"
-  namespace           = "ECS/ContainerInsights"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ECS"
   period              = 60
   statistic           = "Average"
   threshold           = 0
@@ -109,11 +114,11 @@ resource "aws_cloudwatch_metric_alarm" "ecs_api_no_tasks" {
 
 resource "aws_cloudwatch_metric_alarm" "ecs_frontend_no_tasks" {
   alarm_name          = "${var.project_name}-${var.environment}-ecs-frontend-no-tasks"
-  alarm_description   = "Frontend ECS service has zero running tasks"
-  comparison_operator = "LessThanOrEqualToThreshold"
+  alarm_description   = "Frontend ECS service has zero running tasks (no CPU metrics reported)"
+  comparison_operator = "LessThanThreshold"
   evaluation_periods  = 2
-  metric_name         = "RunningTaskCount"
-  namespace           = "ECS/ContainerInsights"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ECS"
   period              = 60
   statistic           = "Average"
   threshold           = 0

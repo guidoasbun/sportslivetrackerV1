@@ -163,3 +163,34 @@ variable "domain_name" {
   description = "Domain name for the application (e.g., dev.gameshift.live) — used for internal service-to-service HTTPS calls"
   type        = string
 }
+
+# ──────────────────────────────────────────────────────────────
+# Scheduled scale-to-zero
+# When enabled, all three services scale to 0 tasks during off-hours
+# and back to their desired count during on-hours, on a cron schedule.
+# This is the main cost lever for a demo app that doesn't need 24/7 uptime.
+# ──────────────────────────────────────────────────────────────
+
+variable "enable_scheduled_scaling" {
+  description = "If true, create scheduled scale-down/scale-up actions for all ECS services."
+  type        = bool
+  default     = false
+}
+
+variable "scale_up_cron" {
+  description = "Cron expression (Application Auto Scaling format) for scaling services UP to their desired count. Default: 08:00 on weekdays."
+  type        = string
+  default     = "cron(0 8 ? * MON-FRI *)"
+}
+
+variable "scale_down_cron" {
+  description = "Cron expression (Application Auto Scaling format) for scaling services DOWN to zero. Default: 20:00 every day."
+  type        = string
+  default     = "cron(0 20 * * ? *)"
+}
+
+variable "scaling_timezone" {
+  description = "IANA timezone for the scheduled scaling cron expressions (e.g., America/New_York). Defaults to UTC."
+  type        = string
+  default     = "Etc/UTC"
+}

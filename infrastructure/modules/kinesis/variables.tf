@@ -9,7 +9,7 @@ variable "environment" {
 }
 
 variable "shard_count" {
-  description = "Number of shards for the Kinesis stream"
+  description = "Deprecated: unused since the stream uses ON_DEMAND mode (no fixed shards). Retained for backward compatibility."
   type        = number
   default     = 1
 }

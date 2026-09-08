@@ -41,9 +41,12 @@ resource "aws_cloudwatch_log_group" "api" {
 resource "aws_ecs_cluster" "main" {
   name = "${var.project_name}-${var.environment}-cluster"
 
+  # Container Insights is disabled to avoid its per-task custom metric
+  # charges (~$10-15/mo at this scale). Basic CPU/memory metrics remain
+  # available via the AWS/ECS namespace at no extra cost.
   setting {
     name  = "containerInsights"
-    value = "enabled"
+    value = "disabled"
   }
 
   tags = {
@@ -168,8 +171,11 @@ resource "aws_ecs_service" "producer" {
     assign_public_ip = false
   }
 
+  # desired_count is ignored so scheduled scaling (Application Auto Scaling)
+  # owns the task count. Without this, every terraform apply would reset the
+  # count and fight the scale-down/scale-up schedule.
   lifecycle {
-    ignore_changes = [task_definition]
+    ignore_changes = [task_definition, desired_count]
   }
 
   tags = {
@@ -250,8 +256,9 @@ resource "aws_ecs_service" "frontend" {
     container_port   = var.container_port
   }
 
+  # desired_count is ignored so scheduled scaling owns the task count.
   lifecycle {
-    ignore_changes = [task_definition]
+    ignore_changes = [task_definition, desired_count]
   }
 
   tags = {
@@ -338,8 +345,9 @@ resource "aws_ecs_service" "api" {
     container_port   = var.api_container_port
   }
 
+  # desired_count is ignored so scheduled scaling owns the task count.
   lifecycle {
-    ignore_changes = [task_definition]
+    ignore_changes = [task_definition, desired_count]
   }
 
   tags = {
